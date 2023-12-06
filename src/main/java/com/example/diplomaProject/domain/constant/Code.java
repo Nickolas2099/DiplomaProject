@@ -1,2 +1,5 @@
-package com.example.diplomaProject.domain.constant;public enum Code {
+package com.example.diplomaProject.domain.constant;
+
+public enum Code {
+    INTERNAL_SERVER_ERROR
 }
