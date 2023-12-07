@@ -12,7 +12,7 @@ public interface UserService {
 
     ResponseEntity<Response> add(User user);
 
-    ResponseEntity<Response> update(User user, Long id);
+    ResponseEntity<Response> update(User user);
 
     ResponseEntity<Response> remove(Long id);
 

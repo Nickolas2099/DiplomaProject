@@ -57,11 +57,11 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ResponseEntity<Response> update(User user, Long id) {
+    public ResponseEntity<Response> update(User user) {
 
         validation.validationRequest(user);
 
-        Optional<User> userOptional = userRepository.findById(id);
+        Optional<User> userOptional = userRepository.findById(user.getId());
         if(userOptional.isPresent()) {
             User baseUser = userOptional.get();
             baseUser.setFirstName(user.getFirstName());
