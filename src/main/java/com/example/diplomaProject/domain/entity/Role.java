@@ -1,6 +1,7 @@
 package com.example.diplomaProject.domain.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +21,7 @@ public class Role {
     private Long id;
 
     @Column(name = "title", unique = true)
+    @NotBlank
     private String title;
 
 
