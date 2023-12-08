@@ -30,7 +30,7 @@ public class UserServiceImpl implements UserService{
 
     public ResponseEntity<Response> getAll() {
 
-        List<User> users = userRepository.findAllSortBySecondName();
+        List<User> users = userRepository.findAllByOrderBySecondName();
 
         return new ResponseEntity<>(SuccessResponse.builder().data(users).build(), HttpStatus.OK);
     }

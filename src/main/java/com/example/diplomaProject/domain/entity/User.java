@@ -37,13 +37,14 @@ public class User {
     @NotEmpty(message = "пароль должен быть заполнен")
     private char[] password;
 
-    @Column(name = "input_time")
+//    @Column(name = "input_time")
+    @Transient
     private String inputTime;
 
     @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
-//    @JoinColumn(name = "user_role",
-//            joinColumns = @JoinColumn(name = "_user", referencedColumnName = "id"),
-//            inverseJoinColumns = @JoinColumn(name = "_role", referencedColumnName = "id"))
+    @JoinTable(name = "user_role",
+            joinColumns = @JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns = @JoinColumn(name = "role_id", referencedColumnName = "id"))
     private Set<Role> roles;
 
 }
