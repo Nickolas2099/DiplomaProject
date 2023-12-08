@@ -7,6 +7,7 @@ import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
 import com.example.diplomaProject.domain.response.error.ErrorResponse;
 import com.example.diplomaProject.repository.UserRepository;
+import com.example.diplomaProject.util.EncryptPassword;
 import com.example.diplomaProject.util.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,7 @@ public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
     private final ValidationUtils validation;
+    private final EncryptPassword encryptPassword;
 
 
     public ResponseEntity<Response> getAll() {
@@ -51,6 +53,7 @@ public class UserServiceImpl implements UserService{
     public ResponseEntity<Response> add(User user) {
 
         validation.validationRequest(user);
+        user.setPassword(encryptPassword.encryptPassword(user.getPassword()));
         userRepository.save(user);
 
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
