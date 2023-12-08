@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 import java.util.Set;
 
 @Entity
-@Table(name = "_user", uniqueConstraints = {
+@Table(name = "user_table", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"first_name"}),
         @UniqueConstraint(columnNames = {"second_name"})
 })
@@ -22,7 +22,7 @@ import java.util.Set;
 public class User {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(name = "first_name")
@@ -33,14 +33,14 @@ public class User {
     @NotBlank(message = "фамилия должна быть заполнена")
     private String secondName;
 
-    @Column(name = "_password")
+    @Column(name = "password")
     @NotEmpty(message = "пароль должен быть заполнен")
     private char[] password;
 
     @Column(name = "input_time")
     private String inputTime;
 
-    @ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.PERSIST)
 //    @JoinColumn(name = "user_role",
 //            joinColumns = @JoinColumn(name = "_user", referencedColumnName = "id"),
 //            inverseJoinColumns = @JoinColumn(name = "_role", referencedColumnName = "id"))
