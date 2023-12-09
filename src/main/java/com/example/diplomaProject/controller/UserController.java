@@ -21,7 +21,7 @@ public class UserController {
 
         log.info("START endpoint getAllUsers");
         ResponseEntity<Response> resp = userService.getAll();
-        log.info("END endpoint getAllUsers, resp: {}", resp);
+        log.info("END endpoint getAllUsers");
         return resp;
     }
 
@@ -52,7 +52,7 @@ public class UserController {
         return resp;
     }
 
-    @PatchMapping("/{id}/update")
+    @PatchMapping("/update")
     public ResponseEntity<Response> updateUser(@RequestBody final User user) {
 
         log.info("START endpoint updateUser, user: {}", user);

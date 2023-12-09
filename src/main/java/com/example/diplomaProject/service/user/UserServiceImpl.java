@@ -1,11 +1,13 @@
 package com.example.diplomaProject.service.user;
 
 import com.example.diplomaProject.domain.constant.Code;
+import com.example.diplomaProject.domain.entity.Role;
 import com.example.diplomaProject.domain.entity.User;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
 import com.example.diplomaProject.domain.response.error.ErrorResponse;
+import com.example.diplomaProject.repository.RoleRepository;
 import com.example.diplomaProject.repository.UserRepository;
 import com.example.diplomaProject.util.EncryptPassword;
 import com.example.diplomaProject.util.ValidationUtils;
@@ -15,8 +17,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 @Slf4j
@@ -24,6 +28,7 @@ import java.util.Optional;
 public class UserServiceImpl implements UserService{
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final ValidationUtils validation;
     private final EncryptPassword encryptPassword;
 
@@ -54,6 +59,14 @@ public class UserServiceImpl implements UserService{
 
         validation.validationRequest(user);
         user.setPassword(encryptPassword.encryptPassword(user.getPassword()));
+        Set<Role> rolesCopy = new HashSet<>(user.getRoles());
+        for(Role role : rolesCopy) {
+            Role optionalRole = roleRepository.findRoleByTitle(role.getTitle());
+            if(optionalRole != null) {
+                user.getRoles().remove(role);
+                user.getRoles().add(optionalRole);
+            }
+        }
         userRepository.save(user);
 
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
@@ -69,8 +82,16 @@ public class UserServiceImpl implements UserService{
             User baseUser = userOptional.get();
             baseUser.setFirstName(user.getFirstName());
             baseUser.setSecondName(user.getSecondName());
-            baseUser.setPassword(user.getPassword());
+//            baseUser.setPassword(user.getPassword());
             baseUser.setRoles(user.getRoles());
+            Set<Role> rolesCopy = new HashSet<>(user.getRoles());
+            for(Role role : rolesCopy) {
+                Role optionalRole = roleRepository.findRoleByTitle(role.getTitle());
+                if(optionalRole != null) {
+                    user.getRoles().remove(role);
+                    user.getRoles().add(optionalRole);
+                }
+            }
             userRepository.save(baseUser);
 
             return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
@@ -90,6 +111,7 @@ public class UserServiceImpl implements UserService{
                     .error(Error.builder().code(Code.NOT_FOUND).message("Пользователь не найден").build())
                     .build(), HttpStatus.BAD_REQUEST);
         }
+        userRepository.deleteById(id);
 
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
     }
