@@ -12,4 +12,8 @@
 
 ## database relations
 
-### user <-manyToOne-> user_role <-ontToMany-> role
+#### user <-manyToOne-> user_role <-ontToMany-> role
+
+## database docker command
+
+#### docker run --name pg-db -p <port>:<port> -e POSTGRES_PASSWORD=<password> -d -v "path":/docker-entrypoint-initdb.d postgres
