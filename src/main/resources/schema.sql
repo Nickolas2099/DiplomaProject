@@ -1,0 +1,31 @@
+CREATE DATABASE diplomdb;
+
+\c diplomdb;
+
+CREATE TABLE IF NOT EXISTS user_table (
+
+	id BIGSERIAL PRIMARY KEY,
+	first_name VARCHAR(30) NOT NULL,
+	second_name VARCHAR(30) NOT NULL,
+	password VARCHAR(50) NOT NULL,
+	input_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	UNIQUE(first_name, second_name)
+);
+
+CREATE TABLE IF NOT EXISTS role_table (
+	
+	id BIGSERIAL PRIMARY KEY,
+	title VARCHAR(30) NOT NULL,
+	UNIQUE(title)
+);
+
+CREATE TABLE IF NOT EXISTS user_role (
+	
+	id BIGSERIAL PRIMARY KEY,
+	user_id BIGINT NOT NULL,
+	role_id BIGINT NOT NULL,
+	FOREIGN KEY (user_id) REFERENCES user_table(id)
+	ON DELETE CASCADE ON UPDATE CASCADE,
+	FOREIGN KEY (role_id) REFERENCES role_table(id)
+	ON DELETE CASCADE ON UPDATE CASCADE
+);
