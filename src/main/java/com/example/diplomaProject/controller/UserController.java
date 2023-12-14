@@ -1,5 +1,6 @@
 package com.example.diplomaProject.controller;
 
+import com.example.diplomaProject.domain.dto.UserDto;
 import com.example.diplomaProject.domain.entity.User;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.service.user.UserService;
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PostMapping("/add")
-    public ResponseEntity<Response> addUser(@RequestBody final User user) {
+    public ResponseEntity<Response> addUser(@RequestBody final UserDto user) {
 
         log.info("START endpoint addUser, user: {}", user);
         ResponseEntity<Response> resp = userService.add(user);
@@ -54,7 +55,7 @@ public class UserController {
     }
 
     @PatchMapping("/update")
-    public ResponseEntity<Response> updateUser(@RequestBody final User user) {
+    public ResponseEntity<Response> updateUser(@RequestBody final UserDto user) {
 
         log.info("START endpoint updateUser, user: {}", user);
         ResponseEntity<Response> resp = userService.update(user);

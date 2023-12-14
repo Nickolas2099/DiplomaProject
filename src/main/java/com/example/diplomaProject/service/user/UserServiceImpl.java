@@ -1,8 +1,11 @@
 package com.example.diplomaProject.service.user;
 
 import com.example.diplomaProject.domain.constant.Code;
+import com.example.diplomaProject.domain.dto.UserDto;
 import com.example.diplomaProject.domain.entity.Role;
 import com.example.diplomaProject.domain.entity.User;
+import com.example.diplomaProject.domain.mapper.UserListMapper;
+import com.example.diplomaProject.domain.mapper.UserMapper;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
@@ -32,12 +35,16 @@ public class UserServiceImpl implements UserService{
     private final ValidationUtils validation;
     private final EncryptPassword encryptPassword;
 
+    private final UserListMapper userListMapper;
+    private final UserMapper userMapper;
+
 
     public ResponseEntity<Response> getAll() {
 
         List<User> users = userRepository.findAllByOrderBySecondName();
+        List<UserDto> dtoUsers = userListMapper.toDtoList(users);
 
-        return new ResponseEntity<>(SuccessResponse.builder().data(users).build(), HttpStatus.OK);
+        return new ResponseEntity<>(SuccessResponse.builder().data(dtoUsers).build(), HttpStatus.OK);
     }
 
     @Override
@@ -45,7 +52,8 @@ public class UserServiceImpl implements UserService{
 
         Optional<User> userOptional = userRepository.findById(id);
         if(userOptional.isPresent()) {
-            return new ResponseEntity<>(SuccessResponse.builder().data(userOptional.get()).build(), HttpStatus.OK);
+            UserDto userDto = userMapper.toDto(userOptional.get());
+            return new ResponseEntity<>(SuccessResponse.builder().data(userDto).build(), HttpStatus.OK);
         } else {
             log.error("user with id: {} is not found", id);
             return new ResponseEntity<>(ErrorResponse.builder()
@@ -55,16 +63,18 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ResponseEntity<Response> add(User user) {
+    public ResponseEntity<Response> add(UserDto userDto) {
 
-        validation.validationRequest(user);
+        validation.validationRequest(userDto);
+        User user = userMapper.toEntity(userDto);
+
         user.setPassword(encryptPassword.encryptPassword(user.getPassword()));
         Set<Role> rolesCopy = new HashSet<>(user.getRoles());
         for(Role role : rolesCopy) {
-            Role optionalRole = roleRepository.findRoleByTitle(role.getTitle());
-            if(optionalRole != null) {
+            Optional<Role> optionalRole = roleRepository.findRoleByTitle(role.getTitle());
+            if(optionalRole.isPresent()) {
                 user.getRoles().remove(role);
-                user.getRoles().add(optionalRole);
+                user.getRoles().add(optionalRole.get());
             }
         }
         userRepository.save(user);
@@ -73,9 +83,10 @@ public class UserServiceImpl implements UserService{
     }
 
     @Override
-    public ResponseEntity<Response> update(User user) {
+    public ResponseEntity<Response> update(UserDto userDto) {
 
-        validation.validationRequest(user);
+        validation.validationRequest(userDto);
+        User user = userMapper.toEntity(userDto);
 
         Optional<User> userOptional = userRepository.findById(user.getId());
         if(userOptional.isPresent()) {
@@ -86,10 +97,10 @@ public class UserServiceImpl implements UserService{
             baseUser.setRoles(user.getRoles());
             Set<Role> rolesCopy = new HashSet<>(user.getRoles());
             for(Role role : rolesCopy) {
-                Role optionalRole = roleRepository.findRoleByTitle(role.getTitle());
-                if(optionalRole != null) {
+                Optional<Role> optionalRole = roleRepository.findRoleByTitle(role.getTitle());
+                if(optionalRole.isPresent()) {
                     user.getRoles().remove(role);
-                    user.getRoles().add(optionalRole);
+                    user.getRoles().add(optionalRole.get());
                 }
             }
             userRepository.save(baseUser);
