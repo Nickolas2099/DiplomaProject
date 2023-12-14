@@ -17,7 +17,7 @@
             <th>Время регистрации</th>
         </tr>
         </thead>
-        <tbody v-if="users.length > 0">
+        <tbody><!-- v-if=`${users.length > 0}`> -->
         <tr v-for="user in users" :key="user.id">
 <!--            <td>{{user.id}}</td>-->
             <td>{{user.firstName}}</td>
@@ -39,16 +39,15 @@
                 users: []
             }
         },
-        mounted: function () {
-            axios
-                .get('http://localhost:8080/api/v1/users/')
-                .then(response => {
-                    this.users = response.data;
-                    console.log(JSON.stringify(this.users));
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
+        mounted() {
+            async try {
+                const response = await axios.get('http://localhost:8080/api/v1/users/');
+                const users = response.data;
+                this.users = users;
+                console.log(JSON.stringify(this.users));
+            } catch (error) {
+                console.log(error);
+            }
         }
     })
 </script>
