@@ -18,9 +18,9 @@
             </thead>
             <tbody>
 <!--                    v-if="users">-->
-            <tr v-for="user in users" :key="user.id">
+            <tr v-for="user in users.data" :key="user.id">
                 <td>{{user.firstName}}</td>
-                <td>{{user.lastName}}</td>
+                <td>{{user.secondName}}</td>
                 <td>{{user.inputTime}}</td>
             </tr>
             </tbody>
