@@ -58,7 +58,7 @@ public class UserServiceImpl implements UserService{
             log.error("user with id: {} is not found", id);
             return new ResponseEntity<>(ErrorResponse.builder()
                     .error(Error.builder().code(Code.NOT_FOUND).message("Пользователь не найден").build())
-                    .build(), HttpStatus.BAD_REQUEST);
+                    .build(), HttpStatus.NOT_FOUND);
         }
     }
 

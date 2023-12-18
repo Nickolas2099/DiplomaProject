@@ -18,7 +18,7 @@ public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Response> getAllUsers() {
 
         log.info("START endpoint getAllUsers");
@@ -36,7 +36,7 @@ public class UserController {
         return resp;
     }
 
-    @PostMapping("/add")
+    @PostMapping
     public ResponseEntity<Response> addUser(@RequestBody final UserDto user) {
 
         log.info("START endpoint addUser, user: {}", user);
@@ -45,7 +45,7 @@ public class UserController {
         return resp;
     }
 
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteUser(@PathVariable("id") Long id) {
 
         log.info("START endpoint deleteUser, userId: {}", id);
@@ -54,7 +54,7 @@ public class UserController {
         return resp;
     }
 
-    @PatchMapping("/update")
+    @PatchMapping
     public ResponseEntity<Response> updateUser(@RequestBody final UserDto user) {
 
         log.info("START endpoint updateUser, user: {}", user);
