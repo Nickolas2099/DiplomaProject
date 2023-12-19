@@ -1,5 +1,6 @@
 package com.example.diplomaProject.controller;
 
+import com.example.diplomaProject.domain.dto.UserDto;
 import com.example.diplomaProject.domain.entity.User;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.service.user.UserService;
@@ -12,11 +13,12 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/users")
+@CrossOrigin
 public class UserController {
 
     private final UserService userService;
 
-    @GetMapping("/")
+    @GetMapping
     public ResponseEntity<Response> getAllUsers() {
 
         log.info("START endpoint getAllUsers");
@@ -34,8 +36,8 @@ public class UserController {
         return resp;
     }
 
-    @PostMapping("/add")
-    public ResponseEntity<Response> addUser(@RequestBody final User user) {
+    @PostMapping
+    public ResponseEntity<Response> addUser(@RequestBody final UserDto user) {
 
         log.info("START endpoint addUser, user: {}", user);
         ResponseEntity<Response> resp = userService.add(user);
@@ -43,7 +45,7 @@ public class UserController {
         return resp;
     }
 
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Response> deleteUser(@PathVariable("id") Long id) {
 
         log.info("START endpoint deleteUser, userId: {}", id);
@@ -52,8 +54,8 @@ public class UserController {
         return resp;
     }
 
-    @PatchMapping("/update")
-    public ResponseEntity<Response> updateUser(@RequestBody final User user) {
+    @PatchMapping
+    public ResponseEntity<Response> updateUser(@RequestBody final UserDto user) {
 
         log.info("START endpoint updateUser, user: {}", user);
         ResponseEntity<Response> resp = userService.update(user);
