@@ -38,4 +38,6 @@ public interface UserService {
         returning empty successResponse or ErrorResponse inside ResponseEntity
     */
 
+    ResponseEntity<Response> getByFullName(String fullName);
+
 }

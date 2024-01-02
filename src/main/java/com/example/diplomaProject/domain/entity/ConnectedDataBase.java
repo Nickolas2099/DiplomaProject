@@ -12,7 +12,6 @@ import java.util.Set;
 
 @Entity
 @Table(name = "connected_data_base")
-@JsonIgnoreProperties({"hibernateLazyInitializer"})
 @Data
 @Builder
 @NoArgsConstructor
@@ -37,8 +36,5 @@ public class ConnectedDataBase {
 
     @Column
     private String password;
-
-    @OneToMany(fetch = FetchType.LAZY)
-    private Set<ConnectedTable> tables;
 
 }

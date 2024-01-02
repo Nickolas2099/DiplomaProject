@@ -34,7 +34,7 @@ public class User {
     private String secondName;
 
     @Column(name = "password")
-    private char[] password;
+    private String password;
 
     @Column(name = "input_time")
     @CreationTimestamp
