@@ -4,8 +4,8 @@ import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.UserDto;
 import com.example.diplomaProject.domain.entity.Role;
 import com.example.diplomaProject.domain.entity.User;
-import com.example.diplomaProject.domain.mapper.UserListMapper;
-import com.example.diplomaProject.domain.mapper.UserMapper;
+import com.example.diplomaProject.domain.mapper.user.UserListMapper;
+import com.example.diplomaProject.domain.mapper.user.UserMapper;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
@@ -18,6 +18,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -28,12 +32,13 @@ import java.util.Set;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService, UserDetailsService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ValidationUtils validation;
     private final EncryptPassword encryptPassword;
+    private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private final UserListMapper userListMapper;
     private final UserMapper userMapper;
@@ -68,7 +73,8 @@ public class UserServiceImpl implements UserService{
         validation.validationRequest(userDto);
         User user = userMapper.toEntity(userDto);
 
-        user.setPassword(encryptPassword.encryptPassword(user.getPassword()));
+//        user.setPassword(encryptPassword.encryptPassword(user.getPassword()));
+        user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         Set<Role> rolesCopy = new HashSet<>(user.getRoles());
         for(Role role : rolesCopy) {
             Optional<Role> optionalRole = roleRepository.findRoleByTitle(role.getTitle());
@@ -127,5 +133,27 @@ public class UserServiceImpl implements UserService{
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
     }
 
+    @Override
+    public ResponseEntity<Response> getByFullName(String fullName) {
 
+        UserDto user = (UserDto) loadUserByUsername(fullName);
+        return new ResponseEntity<>(SuccessResponse.builder().data(user).build(), HttpStatus.OK);
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        String [] secondAndFirstName = username.split(" ");
+        if(secondAndFirstName.length != 2) {
+            log.error("user with name `{}` not found", username);
+            throw new UsernameNotFoundException("user with name `" + username + "` not found");
+        }
+        String secondName = secondAndFirstName[0];
+        String firstName = secondAndFirstName[1];
+        User user = userRepository.findBySecondNameAndFirstName(secondName, firstName)
+                .orElseThrow(() ->
+                    new UsernameNotFoundException("user with name `" + secondName + " " + firstName + "` not found")
+                );
+        return userMapper.toDto(user);
+    }
 }

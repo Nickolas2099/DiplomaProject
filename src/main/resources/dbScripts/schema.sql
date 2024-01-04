@@ -29,3 +29,15 @@ CREATE TABLE IF NOT EXISTS user_role (
 	FOREIGN KEY (role_id) REFERENCES role_table(id)
 	ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS connected_db (
+
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(30) NOT NULL,
+    db_type VARCHAR(30) NOT NULL,
+    url VARCHAR(70) NOT NULL,
+    username VARCHAR(30) NOT NULL,
+    password VARCHAR(30) NOT NULL,
+
+    UNIQUE(title)
+);
