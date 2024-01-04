@@ -1,4 +1,4 @@
-package com.example.diplomaProject.domain.mapper;
+package com.example.diplomaProject.domain.mapper.role;
 
 import com.example.diplomaProject.domain.dto.RoleDto;
 import com.example.diplomaProject.domain.entity.Role;
