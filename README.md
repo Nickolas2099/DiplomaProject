@@ -1,5 +1,11 @@
 # DIPLOMA PROJECT
 
+## How to launch
+1. download the project
+2. perform docker command to turn on database:
+   - docker run --name pg-db -p <port>:<port> -e POSTGRES_PASSWORD=pgpass -d -v "path":/docker-entrypoint-initdb.d postgres
+3. run sql script in src/main/resources/dbScripts/schema.sql
+
 ## api
 
 | address                   | request | action      | 
