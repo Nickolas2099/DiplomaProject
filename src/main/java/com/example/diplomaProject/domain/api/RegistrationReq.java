@@ -14,12 +14,12 @@ import java.util.Set;
 @NoArgsConstructor
 public class RegistrationReq {
 
+    private String login;
+
     private String firstName;
 
-    private String secondName;
+    private String lastName;
 
     private String password;
-
-    private Set<RoleDto> roles;
 
 }

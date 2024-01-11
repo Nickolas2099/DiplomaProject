@@ -4,12 +4,16 @@ import com.example.diplomaProject.domain.api.AuthenticationReq;
 import com.example.diplomaProject.domain.api.AuthenticationResp;
 import com.example.diplomaProject.domain.api.RegistrationReq;
 import com.example.diplomaProject.domain.constant.Code;
+import com.example.diplomaProject.domain.dto.RoleDto;
 import com.example.diplomaProject.domain.dto.UserDto;
+import com.example.diplomaProject.domain.entity.Role;
+import com.example.diplomaProject.domain.mapper.role.RoleMapper;
 import com.example.diplomaProject.domain.mapper.user.UserMapper;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
 import com.example.diplomaProject.domain.response.error.ErrorResponse;
+import com.example.diplomaProject.repository.RoleRepository;
 import com.example.diplomaProject.repository.UserRepository;
 import com.example.diplomaProject.service.security.JwtService;
 import com.example.diplomaProject.service.user.UserService;
@@ -21,6 +25,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -31,15 +40,23 @@ public class AuthServiceImpl implements AuthService {
     private final AuthenticationManager authManager;
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final RoleRepository roleRepository;
+    private final RoleMapper roleMapper;
 
     @Override
     public ResponseEntity<Response> register(RegistrationReq req) {
 
+        Optional<Role> optionalRole = roleRepository.findRoleByTitle("USER");
+        Role role = optionalRole.orElseGet(() -> Role.builder().title("USER").build());
+        Set<RoleDto> roles = new HashSet<>();
+        roles.add(roleMapper.toDto(role));
+
         var user = UserDto.builder()
+                .login(req.getLogin())
                 .firstName(req.getFirstName())
-                .secondName(req.getSecondName())
+                .secondName(req.getLastName())
                 .password(req.getPassword())
-                .roles(req.getRoles())
+                .roles(roles)
                 .build();
         ResponseEntity<Response> optionalResp = userService.add(user);
         if(optionalResp.getStatusCode() != HttpStatus.OK) {

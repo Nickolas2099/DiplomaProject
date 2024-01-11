@@ -5,11 +5,12 @@ CREATE DATABASE diplomdb;
 CREATE TABLE IF NOT EXISTS user_table (
 
 	id BIGSERIAL PRIMARY KEY,
+	login VARCHAR(30) NOT NULL,
 	first_name VARCHAR(30) NOT NULL,
 	second_name VARCHAR(30) NOT NULL,
-	password VARCHAR(50) NOT NULL,
+	password VARCHAR(256) NOT NULL,
 	input_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	UNIQUE(first_name, second_name)
+	UNIQUE(login)
 );
 
 CREATE TABLE IF NOT EXISTS role_table (
