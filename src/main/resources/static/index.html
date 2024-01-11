@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/auth.css">
+    <title>Registration</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body class="body">
+
+    <div class="menu-style">
+        <form id="auth">
+            <div class="container center">
+            <h1>Добро пожаловать</h1>
+            <hr>
+            <label for="login"><b>Логин</b></label>
+            <input v-model="user.login" type="text" placeholder="Введите логин" id="login" required>
+
+            <label for="password"><b>Пароль</b></label>
+            <input v-model="user.password" type="password" placeholder="Введите пароль" id="password" required>
+            <hr>
+            <button type="submit" class="registerbtn">Войти</button>
+            </div>
+
+            <div class="container signin">
+                <p>Нет учетной записи? <a href="register.html">Зарегистрироваться</a></p>
+            </div>
+        </form>
+    </div>
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                user: {
+                    login: '',
+                    password: ''
+                }
+            }
+        },
+        methods: {
+            async registerUser() {
+                try {
+                    const response = await axios.post('http://localhost:8080/api/v1/auth/authenticate', this.user);
+                    if (response.status === 200) {
+                        window.location.href = 'users.html';
+                    }
+                } catch (error) {
+                    console.log(error);
+                }
+            }
+        }
+    });
+    app.mount('#auth');
+</script>
+</html>
