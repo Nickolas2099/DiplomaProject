@@ -25,9 +25,8 @@ public class AppConfig {
     public UserDetailsService userDetailsService() {
         return new UserDetailsService() {
             @Override
-            public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-                String [] names = username.split(" ");
-                return userMapper.toDto(userRepository.findBySecondNameAndFirstName(names[0], names[1])
+            public UserDetails loadUserByUsername(String login) throws UsernameNotFoundException {
+                return userMapper.toDto(userRepository.findByLogin(login)
                         .orElseThrow(() -> new UsernameNotFoundException("User not found")));
             }
         };

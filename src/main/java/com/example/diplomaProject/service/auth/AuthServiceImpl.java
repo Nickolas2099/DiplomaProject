@@ -76,11 +76,11 @@ public class AuthServiceImpl implements AuthService {
 
         authManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        req.getSecondName() + " " + req.getFirstName(),
+                        req.getLogin(),
                     req.getPassword()
                 )
         );
-        var user = userRepository.findBySecondNameAndFirstName(req.getSecondName(), req.getFirstName())
+        var user = userRepository.findByLogin(req.getLogin())
                 .orElseThrow();
         String jwToken = jwtService.generateToken(userMapper.toDto(user));
 

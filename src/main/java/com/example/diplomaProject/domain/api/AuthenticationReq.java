@@ -14,9 +14,7 @@ import java.util.Set;
 @NoArgsConstructor
 public class AuthenticationReq {
 
-    private String firstName;
-
-    private String secondName;
+    private String login;
 
     private String password;
 
