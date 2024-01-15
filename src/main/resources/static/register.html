@@ -17,9 +17,9 @@
                 <input v-model="user.lastName" id="lastName" type="text" placeholder="Введите Фамилию" name="lastName" required>
                 <input v-model="user.firstName" id="firstName" type="text" placeholder="Введите Имя" name="firstName" required>
                 <input v-model="user.login" id="login" type="text" placeholder="Введите логин" name="login" required>
-                <input v-model="user.password" id="password" type="password" placeholder="Введите пароль" name="psw" required>
+                <input v-model="user.password" id="password" type="password" placeholder="Введите пароль" name="password" required>
                 <hr>
-                <input type="submit" class="registerbtn" value="Войти" @click="registerUser">
+                <input type="submit" class="registerbtn" value="Зарегистрироваться" @click="registerUser">
             </div>
         </form>
     </div>
@@ -37,24 +37,18 @@
             }
         },
         methods: {
-            // async registerUser() {
-            //     try {
-            //         console.log('code has been read')
-            //         const response = await axios.post('http://localhost:8080/api/v1/auth/register', this.user);
-            //         if (response.status === 200) {
-            //             window.location.href = 'users.html';
-            //         }
-            //     } catch (error) {
-            //         console.log('there was an error')
-            //         console.log(error);
-            //     }
-            // }
             registerUser() {
                 console.log('code has been read')
-                axios.post('http://localhost:8080/api/v1/auth/register', this.user)
+                axios.post('http://localhost:8080/api/v1/auth/register', this.user, {
+                    headers: {
+                        'Referrer-Policy': 'strict-origin-when-cross-origin',
+                        'x-content-type-options': 'nosniff'
+                    }
+                })
                     .then(response => {
                         if (response.status === 200) {
-                            window.location.href = 'users.html';
+                            localStorage.setItem('jwt', response.data.token);
+                            window.location.href = 'dbsMenu.html';
                         }
                     })
                     .catch(error => {

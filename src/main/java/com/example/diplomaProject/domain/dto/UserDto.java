@@ -44,7 +44,7 @@ public class UserDto implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.secondName + " " + this.firstName;
+        return this.login;
     }
 
     @Override
