@@ -37,22 +37,16 @@
             }
         },
         methods: {
-            registerUser() {
-                console.log('code has been read')
-                axios.post('http://localhost:8080/api/v1/auth/register', this.user, {
-                    headers: {
-                        'Referrer-Policy': 'strict-origin-when-cross-origin',
-                        'x-content-type-options': 'nosniff'
-                    }
-                })
+            registerUser(e) {
+                e.preventDefault();
+                axios.post('http://localhost:8080/api/v1/auth/register', this.user)
                     .then(response => {
                         if (response.status === 200) {
-                            localStorage.setItem('jwt', response.data.token);
+                            localStorage.setItem('jwt', response.data.data.token);
                             window.location.href = 'dbsMenu.html';
                         }
                     })
                     .catch(error => {
-                        console.log('there was an error')
                         console.log(error);
                     });
             }
