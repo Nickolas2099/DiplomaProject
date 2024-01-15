@@ -11,7 +11,7 @@
 <body class="body">
 
     <div class="menu-style">
-        <form id="auth">
+        <form id="auth" @submit.prevent="authUser">
             <div class="container center">
             <h1>Добро пожаловать</h1>
             <hr>
@@ -21,7 +21,7 @@
             <label for="password"><b>Пароль</b></label>
             <input v-model="user.password" type="password" placeholder="Введите пароль" id="password" required>
             <hr>
-            <button @click="authUser" type="submit" class="registerbtn">Войти</button>
+            <button @click="authUser" class="registerbtn" type="button">Войти</button>
             </div>
 
             <div class="container signin">
@@ -41,11 +41,13 @@
             }
         },
         methods: {
-            async authUser() {
+            async authUser(e) {
+                e.preventDefault();
                 try {
                     const response = await axios.post('http://localhost:8080/api/v1/auth/authenticate', this.user);
                     if (response.status === 200) {
-                        console.log('request has been commited')
+                        console.log(response.data.data.token)
+                        localStorage.setItem('jwt', response.data.data.token);
                         window.location.href = 'dbsMenu.html';
                     } else {
                         alert("Проверьте корректность данных")

@@ -8,14 +8,14 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 <body class="body">
-  <div id="dbs" class="menu-style">
+<div id="dbs" class="menu-style">
     <div v-for="db in dbs.data" :key="db.id">
-      <p>{{db.title}}</p>
-      <p>{{db.dbType}}</p>
+        <p>{{db.title}}</p>
+        <p>{{db.dbType}}</p>
     </div>
-  </div>
-
+</div>
 </body>
+
 <script>
     const app = Vue.createApp({
         data() {
@@ -24,12 +24,16 @@
             }
         },
         methods: {
-            async created() {
-                const response = await axios.get('http://localhost:8080/api/v1/auth/authenticate',
-                    { headers: { Authorization: `Bearer ${localStorage.getItem('jwt')}` } })
-                const data = response.json()
-                console.log(this.dbs)
-            }
+
+        },
+        async created() {
+            console.log(localStorage.getItem('jwt'))
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs',
+                { headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }, 'x-content-type-options': 'nosniff' })
+            this.dbs = response.data
+            console.log(this.dbs)
         }
     });
     app.mount('#dbs');
