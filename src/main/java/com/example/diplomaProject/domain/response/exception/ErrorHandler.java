@@ -23,18 +23,18 @@ public class ErrorHandler {
                         .build()).build(), ex.getHttpStatus());
     }
 
+    @ExceptionHandler(ExpiredJwtException.class)
+    public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException ex) {
+        log.error("json web token is already expired: {}", ex.toString());
+        return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                .code(Code.FORBIDDEN).message("токен больше не действителен").build()).build(), HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleUnexpectedErrorException(Exception ex) {
         ex.printStackTrace();
         log.error("internal server error: {}", ex.toString());
         return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder().code(Code.INTERNAL_SERVER_ERROR)
                 .message("Внутренняя ошибка сервиса").build()).build(), HttpStatus.INTERNAL_SERVER_ERROR);
-    }
-
-    @ExceptionHandler(ExpiredJwtException.class)
-    public ResponseEntity<ErrorResponse> handleExpiredJwtException(ExpiredJwtException ex) {
-        log.error("json web token is already expired: {}", ex.toString());
-        return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
-                .code(Code.FORBIDDEN).message("токен больше не действителен").build()).build(), HttpStatus.FORBIDDEN);
     }
 }
