@@ -12,9 +12,12 @@ import com.example.diplomaProject.repository.ConnectedDbRepository;
 import com.example.diplomaProject.util.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,12 +25,13 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin
 public class ConnectedDbServiceImpl implements ConnectedDbService {
 
     private final ConnectedDbRepository dbRepository;
     private final ValidationUtils validationUtils;
-
     private final ConnDbMapper connDbMapper;
+
 
     @Override
     public ResponseEntity<Response> add(ConnDbDto connectedDb) {
@@ -103,21 +107,22 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
         }
     }
 
-    private ResponseEntity<Response> switchDb(Long id) {
-//
-//        ConnectedDataBase dataBase = dbRepository.findById(id).get();
-//
-//        Configuration config = new Configuration();
-//        config.setProperty("hibernate.connection.driver_class",
-//                switch (dataBase.getDbType()) {
-//                    case MYSQL -> "com.mysql.jdbc.Driver";
-//                    case POSTGRES -> "org.postgresql.Driver";
-//                    case ORACLE -> "";
-//                } );
-//        config.setProperty("hibernate.connection.url", dataBase.getUrl());
-//        config.setProperty("hibernate.connection.username", dataBase.getPassword());
-
-        return null;
+    @Override
+    public ResponseEntity<Response> getByTitle(String dbTitle) {
+        dbTitle = dbTitle.trim();
+        if(dbTitle.equals("")) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                    .code(Code.INVALID_VALUE).message("db title is empty").build()).build(), HttpStatus.BAD_REQUEST);
+        }
+        Optional<ConnDb> optionalConnDb = dbRepository.findByTitle(dbTitle);
+        if(optionalConnDb.isEmpty()) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                    .code(Code.NOT_FOUND).message("not found db with name: " + dbTitle).build()).build(),
+                    HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(SuccessResponse.builder().data(connDbMapper.toDto(optionalConnDb.get())).build(),
+                    HttpStatus.OK);
+        }
     }
 
 }
