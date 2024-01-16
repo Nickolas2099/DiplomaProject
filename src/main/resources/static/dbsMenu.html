@@ -8,9 +8,9 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 <body class="body">
-<div id="dbs" class="menu-style">
-    <div v-for="db in dbs.data" :key="db.id">
-        <p>{{db.title}}</p>
+<div id="dbs" class="expand-menu color-first">
+    <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="color-second db-el">
+        <h3>{{db.title}}</h3>
         <p>{{db.dbType}}</p>
     </div>
 </div>
@@ -24,10 +24,18 @@
             }
         },
         methods: {
-
+            switchDb(e, db) {
+                e.preventDefault();
+                axios.post('http://localhost:8080/api/v1/connectedDbs/switch', {
+                    title: db.title
+                }, { 
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }
+                })
+            }
         },
         async created() {
-            console.log(localStorage.getItem('jwt'))
             const response = await axios.get('http://localhost:8080/api/v1/connectedDbs',
                 { headers: {
                         Authorization: `Bearer ${localStorage.getItem('jwt')}`
