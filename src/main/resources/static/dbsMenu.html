@@ -7,12 +7,15 @@
 </head>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
-<body class="body">
+<body>
+<h1 class="center">Сохранённые базы данных:</h1>
+<div class="justify-center">
 <div id="dbs" class="expand-menu color-first">
     <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="color-second db-el">
         <h3>{{db.title}}</h3>
         <p>{{db.dbType}}</p>
     </div>
+</div>
 </div>
 </body>
 
@@ -33,6 +36,16 @@
                         Authorization: `Bearer ${localStorage.getItem('jwt')}`
                     }
                 })
+                    .then(response => {
+                        if(response.status === 200) {
+                            window.location.href = 'dbData.html';
+                        } else {
+                            alert('похоже что-то пошло не так');
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
             }
         },
         async created() {

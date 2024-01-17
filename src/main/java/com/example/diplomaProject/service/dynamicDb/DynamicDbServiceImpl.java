@@ -24,6 +24,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -38,13 +40,15 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     private Set<Table> tables;
 
     public static SessionFactory dynamicSessionFactory;
-    public static String dbName;
+    private String dbName;
 
     @Override
     public ResponseEntity<Response> switchDb(SwitchDbReq req) {
         try {
             SuccessResponse response = (SuccessResponse)connectedDbService.getByTitle(req.getTitle()).getBody();
-            dynamicSessionFactory = getSessionFactory(connDbMapper.toEntity((ConnDbDto)response.getData()));
+            ConnDb connDb = connDbMapper.toEntity((ConnDbDto)response.getData());
+            dbName = getDatabaseName(connDb.getUrl());
+            dynamicSessionFactory = getSessionFactory(connDb);
             return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
         }catch (Exception ex) {
             log.error(ex.toString());
@@ -54,15 +58,19 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         }
     }
 
+    private String getDatabaseName(String url) throws URISyntaxException {
+        URI uri = new URI(url.substring(5));
+        return uri.getPath().substring(1);
+    }
+
     @Override
     public ResponseEntity<Response> getAll() {
         try {
-
             Session session = dynamicSessionFactory.openSession();
             Transaction tx = session.beginTransaction();
             List<Table> tables =
                     session.createNativeQuery("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
-                            "WHERE TABLE_SCHEMA = 'test_db' AND TABLE_TYPE = 'BASE TABLE';")
+                            "WHERE TABLE_SCHEMA = '" + dbName + "' AND TABLE_TYPE = 'BASE TABLE';")
                             .setResultTransformer(new TableMapper()).list();
             log.info("enabled tables: {}", tables);
 

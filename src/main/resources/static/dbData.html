@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style/auth.css">
+    <title>Вывод данных</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body>
+    <h1 class="center">Все записи в базе:</h1>
+    <div class="justify-center">
+        <div id="dataOutput" class="expand-menu color-first p-1">
+            <table v-for="tableData in dbData.data" :key="tableData.techTitle">
+                <tr>
+                    <td>Таблица: </td>
+                    <td><h3>{{tableData.techTitle}}</h3></td>
+                </tr>
+                <tr v-for="fieldData in tableData.fields" :key="fieldData.techTitle">
+                    <td>{{fieldData.techTitle}}</td>
+                    <td v-for="eachValue in fieldData.value" :key="eachValue">{{eachValue}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                dbData: []
+            }
+        },
+        methods: { },
+        async created() {
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/db',
+                { headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }, 'x-content-type-options': 'nosniff' })
+            this.dbData = response.data
+            console.log(this.dbData.data)
+        }
+    });
+    app.mount('#dataOutput');
+</script>
+</html>

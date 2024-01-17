@@ -70,8 +70,6 @@ a {
 }
 
 .menu-style {
-    display: flex;
-    justify-content: center;
     width: 400px;
     height: 450px;
     border-radius: 20px;
@@ -94,4 +92,36 @@ a {
 }
 .center {
     text-align: center;
+}
+.justify-center {
+    display: flex;
+    justify-content: center;
+}
+
+.p-1 {
+    padding: 10px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+    padding: 15px;
+    text-align: left;
+}
+
+th {
+    background-color: #f2f2f2;
+    color: black;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #ddd;
 }
