@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style/dbAddStyle.css">
+    <title>Добавление базы данных</title>
+</head>
+<body>
+  <div class="container">
+
+    <div class="menu-style color-first center-menu">
+      <h2 class="center m6">Подключение</h2>
+      <label for="login">Url</label>
+      <div class="center">
+        <input v-model="db.url" type="text" id="url" readonly>
+      </div>
+      <label for="title">Отображаемое название</label>
+      <div class="center">
+        <input v-model="db.title" type="text" id="title" required>
+      </div>
+      <label>Пользователь</label>
+      <div class="center">
+        <input type="text"id="username" required>        
+      </div>
+      <label for="password">Пароль</label>
+      <div class="center">
+        <input v-model="db.password" type="password" id="password" required>
+      </div>
+      <div class="justify-end">
+        <button class="check-btn color-second">Проверить</button>
+      </div>
+    </div>
+
+    <div class="color-first right-menu">
+      <h3 class="center">Параметры адреса</h3>
+      <div class="m2">
+        <div>
+          Тип базы
+        </div>
+        <input type="radio" id="postgresql" value="postgresql" name="dbType" checked>
+        <label for="postgresql">postgresql</label>
+        <input type="radio" id="mysql" value="mysql" name="dbType">
+        <label for="mysql">mysql</label>
+      </div>
+        
+        <label>Название</label>
+        <input type="text" id="tech-title" required>
+        <label>Адрес</label>
+        <input type="text" id="address" required>
+        <label>Порт</label>
+        <input type="text" id="port" required>
+    </div>
+  </div>
+  <div class="justify-center">
+    <button class="menu-btn color-first">Назад</button>
+    <button class="menu-btn color-second">Добавить</button>
+  </div>
+</body>
+</html>

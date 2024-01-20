@@ -17,6 +17,7 @@
     </div>
 </div>
 </div>
+<button type="button" @click="addDbPage">Добавить базу</button>
 </body>
 
 <script>
@@ -46,6 +47,9 @@
                     .catch(error => {
                         console.error(error);
                     });
+            },
+            addDbPage() {
+                window.location.href = 'addDb.html'
             }
         },
         async created() {
