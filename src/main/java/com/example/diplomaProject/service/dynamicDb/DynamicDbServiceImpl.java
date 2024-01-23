@@ -16,6 +16,7 @@ import com.example.diplomaProject.domain.response.error.ErrorResponse;
 import com.example.diplomaProject.service.connectedDB.ConnectedDbService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.HibernateException;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -107,28 +108,41 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         }
     }
 
+    @Override
+    public ResponseEntity<Response> checkConnection(ConnDbDto connDb) {
+
+            SessionFactory sessionFactory = getSessionFactory(connDbMapper.toEntity(connDb));
+            Session session = null;
+            try {
+                session = sessionFactory.openSession();
+            } catch (HibernateException e) {
+                e.printStackTrace();
+                return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                        .message("Connection error").code(Code.INVALID_VALUE)
+                        .build()).build(), HttpStatus.BAD_REQUEST);
+            } finally {
+                if (session != null) {
+                    session.close();
+                }
+            }
+            return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
+
+
+    }
+
     private SessionFactory getSessionFactory(ConnDb dataBase) {
         Configuration config = new Configuration();
 
         String driver = "";
-//        String dialect = "";
         switch (dataBase.getDbType()) {
-            case MYSQL -> {
-                driver = "com.mysql.cj.jdbc.Driver";
-//                dialect = "MySQLDialect";
-            }
-            case POSTGRESQL -> {
-                driver = "org.postgresql.Driver";
-//                dialect = "PostgreSQLDialect";
-            }
+            case MYSQL ->  driver = "com.mysql.cj.jdbc.Driver";
+            case POSTGRESQL -> driver = "org.postgresql.Driver";
         }
 
         config.setProperty("hibernate.connection.driver_class", driver);
-//        config.setProperty("hibernate.connection.url", "jdbc:" + kind + "://" + dataBase. + ":" +  + "/" + dataBase.getTitle());
         config.setProperty("hibernate.connection.url", dataBase.getUrl());
         config.setProperty("hibernate.connection.username", dataBase.getUsername());
         config.setProperty("hibernate.connection.password", dataBase.getPassword());
-//        config.setProperty("hibernate.dialect", "org.hibernate.dialect." + dialect);
 
         return config.buildSessionFactory();
     }

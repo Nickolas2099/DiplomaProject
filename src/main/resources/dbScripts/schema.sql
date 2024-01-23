@@ -39,6 +39,6 @@ CREATE TABLE IF NOT EXISTS connected_db (
     url VARCHAR(70) NOT NULL,
     username VARCHAR(30) NOT NULL,
     password VARCHAR(30) NOT NULL,
-
+    input_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(title)
 );
