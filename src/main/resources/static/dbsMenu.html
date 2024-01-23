@@ -8,16 +8,18 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 <body>
-<h1 class="center">Сохранённые базы данных:</h1>
-<div class="justify-center">
-<div id="dbs" class="expand-menu color-first">
-    <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="color-second db-el">
-        <h3>{{db.title}}</h3>
-        <p>{{db.dbType}}</p>
+    <div id="dbs">
+        <h1 class="center">Сохранённые базы данных:</h1>
+        <div class="justify-center">
+            <div class="expand-menu color-first">
+                <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="color-second db-el">
+                    <h3>{{db.title}}</h3>
+                    <p>{{db.dbType}}</p>
+                </div>
+            </div>
+        </div>
+        <button type="button" class="color-first menu-btn" @click="goToAddDbPage">Добавить базу</button>
     </div>
-</div>
-</div>
-<button type="button" @click="addDbPage">Добавить базу</button>
 </body>
 
 <script>
@@ -48,7 +50,8 @@
                         console.error(error);
                     });
             },
-            addDbPage() {
+            goToAddDbPage() {
+                console.log('!!!')
                 window.location.href = 'addDb.html'
             }
         },
