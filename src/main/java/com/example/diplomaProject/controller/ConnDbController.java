@@ -82,4 +82,13 @@ public class ConnDbController {
         return resp;
     }
 
+    @GetMapping("/testConnection")
+    public ResponseEntity<Response> checkDbConnection(@RequestBody final ConnDbDto connDb) {
+
+        log.info("START endpoint checkDbConnection");
+        ResponseEntity<Response> resp = dynamicDbService.checkConnection(connDb);
+        log.info("END endpoint checkDbConnection, resp `{}`", resp);
+        return resp;
+    }
+
 }

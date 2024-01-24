@@ -30,7 +30,7 @@
           <input v-model="db.password" type="password" id="password" required>
         </div>
         <div class="justify-end">
-          <button class="check-btn color-second">Проверить</button>
+          <button class="check-btn color-second" @click="testConnection">Проверить</button>
         </div>
       </div>
       
@@ -110,6 +110,18 @@
         let url = "jdbc:" + kind + "://" + address + ":" + port + "/" + title;
         this.db.url = url;
       },
+      testConnection() {
+        const response = axios.get('http://localhost:8080/api/v1/connectedDbs/testConnection', this.db, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`
+          }
+        })
+        if(response.status === 200) {
+          alert("Содинение успешно")
+        } else {
+          alert("Ошибка соединения")
+        }
+      }
     },
     mounted() {
       this.concatRow();
