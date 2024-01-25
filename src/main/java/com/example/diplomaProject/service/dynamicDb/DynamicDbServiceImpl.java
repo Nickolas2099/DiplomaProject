@@ -69,12 +69,14 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         try {
             Session session = dynamicSessionFactory.openSession();
             Transaction tx = session.beginTransaction();
+            //достаём все таблицы из нужной базы данных
             List<Table> tables =
                     session.createNativeQuery("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
                             "WHERE TABLE_SCHEMA = '" + dbName + "' AND TABLE_TYPE = 'BASE TABLE';")
                             .setResultTransformer(new TableMapper()).list();
             log.info("enabled tables: {}", tables);
 
+            //достаём все столбцы для каждой из таблиц
             for(Table table : tables) {
                 table.setFields(
                         session.createNativeQuery("SELECT COLUMN_NAME " +
@@ -83,6 +85,7 @@ public class DynamicDbServiceImpl implements DynamicDbService {
             }
             log.info("enabled tables: {}", tables);
 
+            //достаём все значения каждой колонки
             for(Table table : tables) {
                 for(Field field : table.getFields()) {
                     List<Object> values = session.createNativeQuery("SELECT " + field.getTechTitle()
