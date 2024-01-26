@@ -3,32 +3,27 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style/auth.css">
+    <link rel="stylesheet" href="style/index.css">
     <title>Registration</title>
 </head>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 <body class="body">
 
-    <div class="menu-style color-first justify-center">
-        <form id="auth" @submit.prevent="authUser">
-            <div class="container center">
-            <h1>Добро пожаловать</h1>
-            <hr>
-            <label for="login"><b>Логин</b></label>
-            <input v-model="user.login" type="text" placeholder="Введите логин" id="login" required>
+    <form id="auth" @submit.prevent="authUser">
+        <div class="container color1">
+            <div>
+            <h1 class="menuheader">Добро пожаловать</h1>
+            <label for="login">Логин</label>
+            <input v-model="user.login" type="text" class="color2" id="login" required>
 
-            <label for="password"><b>Пароль</b></label>
-            <input v-model="user.password" type="password" placeholder="Введите пароль" id="password" required>
-            <hr>
-            <button @click="authUser" class="registerbtn" type="button">Войти</button>
+            <label for="password">Пароль</label>
+            <input v-model="user.password" type="password" class="color2" id="password" required>
+            <button @click="authUser" class="color3" type="button">Войти</button>
             </div>
-
-            <div class="container signin">
-                <p>Нет учетной записи? <a @click="switchToRegister">Зарегистрироваться</a></p>
-            </div>
-        </form>
-    </div>
+            <p class="registertext">Нет учетной записи? <span class="registerlink" @click="switchToRegister">Зарегистрироваться</span></p>
+        </div>
+    </form>
 </body>
 <script>
     const app = Vue.createApp({

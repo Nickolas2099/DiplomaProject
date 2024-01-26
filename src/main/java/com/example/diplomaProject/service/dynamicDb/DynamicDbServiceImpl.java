@@ -150,4 +150,13 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         return config.buildSessionFactory();
     }
 
+    private String createQuery() {
+        StringBuilder sql = new StringBuilder("SELECT ");
+
+        /* todo
+        *   формирование запроса исходя из параметров*/
+
+        return sql.toString();
+    }
+
 }

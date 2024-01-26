@@ -9,20 +9,20 @@
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 <body class="body">
-    <div class="menu-style">
-        <form id="registration" @submit.prevent="registerUser">
-            <div class="container center">
-                <h1>Регистрация</h1>
-                <hr>
-                <input v-model="user.lastName" id="lastName" type="text" placeholder="Введите Фамилию" name="lastName" required>
-                <input v-model="user.firstName" id="firstName" type="text" placeholder="Введите Имя" name="firstName" required>
-                <input v-model="user.login" id="login" type="text" placeholder="Введите логин" name="login" required>
-                <input v-model="user.password" id="password" type="password" placeholder="Введите пароль" name="password" required>
-                <hr>
-                <input type="button" class="registerbtn" value="Зарегистрироваться" @click="registerUser">
-            </div>
-        </form>
-    </div>
+    <form id="registration" @submit.prevent="registerUser">
+        <div class="container color1">
+            <h1 class="menuheader">Регистрация</h1>
+            <label>Фамилия</label>
+            <input v-model="user.lastName" id="lastName" type="text" name="lastName" required>
+            <label>Имя</label>
+            <input v-model="user.firstName" id="firstName" type="text" name="firstName" required>
+            <label>Логин</label>
+            <input v-model="user.login" id="login" type="text" name="login" required>
+            <label>Пароль</label>
+            <input v-model="user.password" id="password" type="password" name="password" required>
+        </div>
+        <input type="button" class="registerbtn color3" value="Зарегистрироваться" @click="registerUser">
+    </form>
 </body>
 <script>
     const app = Vue.createApp({
