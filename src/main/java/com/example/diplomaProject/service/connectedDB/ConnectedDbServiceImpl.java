@@ -4,6 +4,7 @@ import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.ConnDbDto;
 import com.example.diplomaProject.domain.entity.ConnDb;
 import com.example.diplomaProject.domain.mapper.connDb.ConnDbMapper;
+import com.example.diplomaProject.domain.mapper.dynamicDb.DynamicTableListMapper;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
@@ -31,6 +32,7 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
     private final ConnectedDbRepository dbRepository;
     private final ValidationUtils validationUtils;
     private final ConnDbMapper connDbMapper;
+    private final DynamicTableListMapper dynamicTableListMapper;
 
 
     @Override
@@ -123,6 +125,21 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
             return new ResponseEntity<>(SuccessResponse.builder().data(connDbMapper.toDto(optionalConnDb.get())).build(),
                     HttpStatus.OK);
         }
+    }
+
+    @Override
+    public ResponseEntity<Response> getTablesByDbTitle(String dbTitle) {
+
+        Response response = this.getByTitle(dbTitle).getBody();
+        ConnDb db;
+        if(response instanceof ErrorResponse) {
+            return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
+        }
+        else {
+            db = connDbMapper.toEntity((ConnDbDto)((SuccessResponse)response).getData());
+        }
+
+        return new ResponseEntity<>(SuccessResponse.builder().data(dynamicTableListMapper.toDtoList(db.getTables())).build(), HttpStatus.OK);
     }
 
 }

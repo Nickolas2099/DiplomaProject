@@ -91,4 +91,13 @@ public class ConnDbController {
         return resp;
     }
 
+    @GetMapping("/table")
+    public ResponseEntity<Response> getTables(@RequestBody final String dbTitle) {
+
+        log.info("START endpoint getTables, req: {}", dbTitle);
+        ResponseEntity<Response> resp = connDbService.getTablesByDbTitle(dbTitle);
+        log.info("END endpoint getTables, resp `{}`", resp);
+        return resp;
+    }
+
 }

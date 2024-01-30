@@ -35,4 +35,9 @@ public interface ConnectedDbService {
     /*
 
      */
+
+    ResponseEntity<Response> getTablesByDbTitle(String dbTitle);
+    /*
+
+     */
 }

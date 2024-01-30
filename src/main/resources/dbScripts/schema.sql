@@ -42,3 +42,23 @@ CREATE TABLE IF NOT EXISTS connected_db (
     input_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(title)
 );
+
+CREATE TABLE IF NOT EXISTS dynamic_table (
+    id BIGSERIAL PRIMARY KEY,
+    tech_title VARCHAR(30) NOT NULL,
+    user_title VARCHAR(30) NOT NULL,
+    db_id BIGINT NOT NULL,
+    UNIQUE(db_id, tech_title),
+    FOREIGN KEY (db_id) REFERENCES connected_db(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS dynamic_field (
+    id BIGSERIAL PRIMARY KEY,
+    tech_title VARCHAR(30) NOT NULL,
+    user_title VARCHAR(30) NOT NULL,
+    table_id BIGINT NOT NULL,
+    UNIQUE(table_id, tech_title),
+    FOREIGN KEY (table_id) REFERENCES dynamic_table(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
