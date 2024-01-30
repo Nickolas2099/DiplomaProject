@@ -6,8 +6,10 @@
     <link rel="stylesheet" href="style/constructorStyle.css">
     <title>Конструктор запросов</title>
 </head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
 <body>
-    <div class="container">
+    <div id="contructor" class="container">
 
         <div class="color-first center-menu">
             some data
@@ -19,11 +21,11 @@
                     <div class="condition">
                         <label>Таблица</label>
                         <select>
-                            <option selected>user</option>
+                            <option v-for="table in tables">{{table.techTitle}}</option>
                         </select>
                         <label>Поле</label>
                         <select>
-                            <option></option>
+                            <option v-for="field in selectedTable.fields">{{field.techTitle}}</option>
                         </select>
                         <label>Сортировка</label>
                         <select>
@@ -66,7 +68,26 @@
                 <button type="button" class="color-second outer-menu-btn">Отправить запрос</button>
             </div>
         </div>
-
     </div>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                tables: [],
+                selectedTable: "",
+            };
+        },
+        methods: { },
+        async created() {
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/table',
+                { headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }, 'x-content-type-options': 'nosniff' })
+            this.dbData = response.data
+            // console.log(this.dbData.data)
+        }
+    });
+    app.mount('#contructor');
+</script>
 </body>
 </html>
