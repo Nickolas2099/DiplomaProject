@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Table(name = "connected_db")
 @Data
@@ -33,5 +35,9 @@ public class ConnDb {
 
     @Column
     private String password;
+
+    @OneToMany
+    @JoinColumn(name = "db_id")
+    private List<DynamicTable> tables;
 
 }
