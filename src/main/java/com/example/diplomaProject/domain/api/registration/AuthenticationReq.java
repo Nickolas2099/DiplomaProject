@@ -1,4 +1,4 @@
-package com.example.diplomaProject.domain.api;
+package com.example.diplomaProject.domain.api.registration;
 
 import com.example.diplomaProject.domain.dto.RoleDto;
 import lombok.AllArgsConstructor;

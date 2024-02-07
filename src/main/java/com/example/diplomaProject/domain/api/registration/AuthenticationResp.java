@@ -1,4 +1,4 @@
-package com.example.diplomaProject.domain.api;
+package com.example.diplomaProject.domain.api.registration;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
