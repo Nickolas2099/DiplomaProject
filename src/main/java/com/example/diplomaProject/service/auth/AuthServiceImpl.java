@@ -1,8 +1,8 @@
 package com.example.diplomaProject.service.auth;
 
-import com.example.diplomaProject.domain.api.AuthenticationReq;
-import com.example.diplomaProject.domain.api.AuthenticationResp;
-import com.example.diplomaProject.domain.api.RegistrationReq;
+import com.example.diplomaProject.domain.api.registration.AuthenticationReq;
+import com.example.diplomaProject.domain.api.registration.AuthenticationResp;
+import com.example.diplomaProject.domain.api.registration.RegistrationReq;
 import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.RoleDto;
 import com.example.diplomaProject.domain.dto.UserDto;
@@ -25,7 +25,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
