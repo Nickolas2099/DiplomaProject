@@ -1,6 +1,7 @@
 package com.example.diplomaProject.controller;
 
 import com.example.diplomaProject.domain.api.SwitchDbReq;
+import com.example.diplomaProject.domain.api.constructor.QueryReq;
 import com.example.diplomaProject.domain.dto.ConnDbDto;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.service.connectedDB.ConnectedDbService;
@@ -41,8 +42,9 @@ public class ConnDbController {
     public ResponseEntity<Response> addDb(@RequestBody final ConnDbDto connDb) {
 
         log.info("START endpoint addDb, db: `{}`", connDb);
-        ResponseEntity<Response> resp = connDbService.add(connDb);
-        log.info("END endpoint addDb");
+//        ResponseEntity<Response> resp = connDbService.add(connDb);
+        ResponseEntity<Response> resp = dynamicDbService.handleDb(connDb);
+        log.info("END endpoint addDb, resp: {}", resp);
         return resp;
     }
 
@@ -83,7 +85,7 @@ public class ConnDbController {
     }
 
     @GetMapping("/testConnection")
-    public ResponseEntity<Response> checkDbConnection(@RequestBody final ConnDbDto connDb) {
+    public ResponseEntity<Response> checkDbConnection(@RequestParam final ConnDbDto connDb) {
 
         log.info("START endpoint checkDbConnection");
         ResponseEntity<Response> resp = dynamicDbService.checkConnection(connDb);
@@ -92,11 +94,20 @@ public class ConnDbController {
     }
 
     @GetMapping("/table")
-    public ResponseEntity<Response> getTables(@RequestBody final String dbTitle) {
+    public ResponseEntity<Response> getTables(@RequestParam final String dbTitle) {
 
         log.info("START endpoint getTables, req: {}", dbTitle);
         ResponseEntity<Response> resp = connDbService.getTablesByDbTitle(dbTitle);
         log.info("END endpoint getTables, resp `{}`", resp);
+        return resp;
+    }
+
+    @PostMapping("/select")
+    public ResponseEntity<Response> selectData(@RequestBody final QueryReq req) {
+
+        log.info("START endpoint selectData, req: {}", req);
+        ResponseEntity<Response> resp = dynamicDbService.selectFromDb(req);
+        log.info("END endpoint selectData, resp `{}`", resp);
         return resp;
     }
 

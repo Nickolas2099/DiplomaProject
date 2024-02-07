@@ -1,7 +1,7 @@
 package com.example.diplomaProject.controller;
 
-import com.example.diplomaProject.domain.api.AuthenticationReq;
-import com.example.diplomaProject.domain.api.RegistrationReq;
+import com.example.diplomaProject.domain.api.registration.AuthenticationReq;
+import com.example.diplomaProject.domain.api.registration.RegistrationReq;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.service.auth.AuthService;
 import lombok.RequiredArgsConstructor;
