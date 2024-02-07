@@ -1,10 +1,10 @@
 package com.example.diplomaProject.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
@@ -24,10 +24,15 @@ public class DynamicTable {
 
     private String techTitle;
 
-    @OneToMany
-    @JoinColumn(name = "table_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "table")
+    @JsonManagedReference
+//    @JoinColumn(name = "table_id")
     private List<DynamicField> fields;
 
-
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "db_id")
+    @JsonBackReference
+    @ToString.Exclude
+    private ConnDb connDb;
 
 }

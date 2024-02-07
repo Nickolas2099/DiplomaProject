@@ -1,5 +1,6 @@
-package com.example.diplomaProject.domain.dto;
+package com.example.diplomaProject.domain.api.constructor;
 
+import com.example.diplomaProject.domain.dto.Field;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,13 +12,8 @@ import java.util.List;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class Field {
+public class QueryResp {
 
-    private String userTitle;
+    List<QueryField> fields;
 
-    private String techTitle;
-
-    private String kind;
-
-    private List<String> value;
 }

@@ -1,6 +1,7 @@
 package com.example.diplomaProject.domain.mapper.dynamicDb;
 
 import com.example.diplomaProject.domain.dto.Table;
+import com.example.diplomaProject.domain.entity.DynamicTable;
 import org.hibernate.transform.ResultTransformer;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -13,7 +14,7 @@ public class TableMapper implements ResultTransformer {
 
     @Override
     public Object transformTuple(Object[] objects, String[] strings) {
-        Table table = new Table();
+        DynamicTable table = new DynamicTable();
         table.setTechTitle((String)objects[0]);
         return table;
     }

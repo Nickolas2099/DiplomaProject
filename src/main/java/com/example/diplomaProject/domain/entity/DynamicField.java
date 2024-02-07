@@ -1,10 +1,8 @@
 package com.example.diplomaProject.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "dynamic_field")
@@ -22,5 +20,12 @@ public class DynamicField {
 
     private String techTitle;
 
+    private String kind;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "table_id")
+    @JsonBackReference
+    @ToString.Exclude
+    private DynamicTable table;
 
 }

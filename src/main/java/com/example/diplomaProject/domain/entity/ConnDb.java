@@ -1,6 +1,8 @@
 package com.example.diplomaProject.domain.entity;
 
 import com.example.diplomaProject.domain.constant.DataBaseType;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -36,8 +38,8 @@ public class ConnDb {
     @Column
     private String password;
 
-    @OneToMany
-    @JoinColumn(name = "db_id")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "connDb")
+    @JsonManagedReference
     private List<DynamicTable> tables;
 
 }

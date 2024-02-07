@@ -1,6 +1,6 @@
 package com.example.diplomaProject.domain.mapper.dynamicDb;
 
-import com.example.diplomaProject.domain.dto.Field;
+import com.example.diplomaProject.domain.entity.DynamicField;
 import org.hibernate.transform.ResultTransformer;
 
 import java.util.List;
@@ -9,8 +9,9 @@ public class FieldMapper implements ResultTransformer {
 
     @Override
     public Object transformTuple(Object[] objects, String[] strings) {
-        Field field = new Field();
+        DynamicField field = new DynamicField();
         field.setTechTitle((String)objects[0]);
+        field.setKind((String)objects[1]);
         return field;
     }
 
