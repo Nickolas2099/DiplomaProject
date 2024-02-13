@@ -274,7 +274,9 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         //add ORDER BY
         if(req.getSort() != null) {
             sql.append("ORDER BY ");
-            sql.append(req.getSort());
+            sql.append(req.getSort().getField());
+            sql.append(" ");
+            sql.append(req.getSort().getSortKind());
             sql.append(" ");
         }
 

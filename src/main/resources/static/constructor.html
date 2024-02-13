@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/constructorStyle.css">
+    <style>
+        
+    </style>
     <title>Конструктор запросов</title>
 </head>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -12,82 +15,281 @@
     <div id="contructor" class="container">
 
         <div class="color-first center-menu">
-            some data
+            <div id="dataOutput">
+                <table v-if="rows">
+                    <tr>
+                        <td v-for="field in rows[0].fields" :key="field.userTitle">
+                            {{field.userTitle}}
+                        </td>
+                    </tr>
+                    <tr v-for="row in rows" :key="row.fields[0].value">
+                        <td v-for="field in row.fields" :key="field.value">
+                            {{field.value}}
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
         <div class="color-first right-menu">
             <h2 class="center">Конструктор запросов</h2>
             <div class="inner-menu">
-                <div class="scrollmenu">
-                    <div class="condition">
                         <label>Таблица</label>
-                        <select>
-                            <option v-for="table in tables">{{table.techTitle}}</option>
+                        <select class="main-select" v-model="selectedTable" @change="updateFields">
+                            <option v-for="(table, index) in tables" :value="table.techTitle" :key="index">{{table.userTitle}}</option>
                         </select>
-                        <label>Поле</label>
-                        <select>
-                            <option v-for="field in selectedTable.fields">{{field.techTitle}}</option>
-                        </select>
+                        <label>Поля</label>
+                        <div v-if="selectedTable" v-for="field in selectedTable.fields">
+                            <input type="checkbox" :id="field.userTitle" :value="field" v-model="checkedFields">
+                            <label :for="field.userTitle">{{field.userTitle}}</label>
+                        </div>
+                        <br>
                         <label>Сортировка</label>
-                        <select>
-                            <option selected>Не сортировать</option>
-                            <option>По возрастанию</option>
-                            <option>По убыванию</option>
+                        <button type="button" class="inner-menu-btn" @click="showSort">+</button>
+                        <div v-if="sort" v-model="sort" class="filter-container">
+                            <div class="filter-el">{{sort.field}}</div>
+                            <div class="filter-el">{{sort.sortKind}}</div>
+                            <div class="filter-el"><button class="close-btn" @click="removeSort">&times;</button></div>
+                        </div>
+                        <label>Фильтр</label>
+                        <button type="button" class="inner-menu-btn" @click="showFilter">+</button>
+                        <div v-if="filter" v-model="filter" class="filter-container">
+                            <div class="filter-el">{{filter.field}}</div>
+                            <div class="filter-el">{{filter.condition}}</div>
+                            <div class="filter-el"><button class="close-btn" @click="removeFilter">&times;</button></div>
+                        </div>
+                        <label>Группировка</label>
+                        <button type="button" class="inner-menu-btn" @click="showGroup">+</button>
+                        <div v-if="group" v-model="group" class="filter-container">
+                            <div class="filter-el">{{group}}</div>
+                            <div class="filter-el"><button class="close-btn" @click="removeGroup">&times;</button></div>
+                        </div>
+                        <label>Лимит</label>
+                        <select class="main-select" v-model="limit">
+                            <option>5</option>
+                            <option selected>10</option>
+                            <option>20</option>
+                            <option>50</option>
+                            <option>100</option>
                         </select>
-                        <label>Условие</label>
-                        <input type="text">
-                        <label>Или</label>
-                        <input type="text">
-                        <button type="button" class="inner-menu-btn">Удалить</button>
-                    </div>
-                    <hr width="1" size="300">
-                    <div class="condition">
-                        <label>Таблица</label>
-                        <select>
-                            <option selected>user</option>
-                        </select>
-                        <label>Поле</label>
-                        <select>
-                            <option></option>
-                        </select>
-                        <label>Сортировка</label>
-                        <select>
-                            <option selected>Не сортировать</option>
-                            <option>По возрастанию</option>
-                            <option>По убыванию</option>
-                        </select>
-                        <label>Условие</label>
-                        <input type="text">
-                        <label>Или</label>
-                        <input type="text">
-                        <button type="button" class="inner-menu-btn">Удалить</button>
-                    </div>
-                </div>
             </div>
             <div class="justify-between">
-                <button type="button" class="color-second outer-menu-btn">Добавить параметр</button>
-                <button type="button" class="color-second outer-menu-btn">Отправить запрос</button>
+                <button type="button" class="outer-menu-btn" @click="sendQuery">Выполнить запрос</button>
+            </div>
+
+            <div id="sortMenu" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить сортировку</h2>
+                    <button @click="closeSort" class="close-btn">&times;</button>
+                </div>
+                <div class="row">
+                    <div class="row-element">
+                        <select id="fieldForSort" class="row-input">
+                            <option disabled selected>Поле</option>
+                            <option v-if="selectedTable" v-for="field in selectedTable.fields">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="sortSelect" class="row-input">
+                            <option disabled selected>Операция</option>
+                            <option value="ASC">по возрастанию</option>
+                            <option value="DESC">по убыванию</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-end">
+                    <button class="send-btn" @click="addSort">Применить</button>
+                </div>
+            </div>
+
+
+            <div id="filter" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить фильтр</h2>
+                    <button @click="closeFilter" class="close-btn">&times;</button>
+                </div>
+                <div class="row">
+                    <div class="row-element">
+                        <select id="filterField" class="row-input" @change="defineFilters">
+                            <option disabled selected>Поле</option>
+                            <option v-if="selectedTable" v-for="field in selectedTable.fields">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select id="filterCondition" class="row-input">
+                            <option disabled selected>Операция</option>
+                            <option v-if="selectedFilters" v-for="filter in selectedFilters">{{filter}}</option>
+                            <option>IS NULL</option>
+                            <option>IS NOT NULL</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-end">
+                    <button class="send-btn" @click="addFilter">Применить</button>
+                </div>
+            </div>
+
+
+            <div id="group" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить группировку</h2>
+                    <button @click="closeGroup" class="close-btn">&times;</button>
+                </div>
+                <div class="row">
+                    <div class="row-element">
+                        <select id="fieldForGroup" class="row-input">
+                            <option disabled selected>Поле</option>
+                            <option v-if="selectedTable" v-for="field in selectedTable.fields">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-end">
+                    <button class="send-btn" @click="addGroup">Применить</button>
+                </div>
             </div>
         </div>
     </div>
 <script>
+    function myFunction() {
+        var popup = document.getElementById("myPopup");
+        popup.classList.toggle("show");
+    }
+
     const app = Vue.createApp({
         data() {
             return {
                 tables: [],
-                selectedTable: "",
+                selectedTable: null,
+                checkedFields: [],
+                sort: null,
+                filter: null,
+                group: null,
+                limit: "10",
+                conditions: {
+                    number: ['=', '!=', '<', '>', '<=', '>='],
+                    row: ['LIKE', 'NOT LIKE', 'CONTAINS', 'Начинается с', 'Заканчивается на']
+                },
+                selectedFilters: null,
+                rows: null
             };
         },
-        methods: { },
+        methods: {
+            updateFields(event) {
+                this.selectedTable = this.tables.find(table => table.userTitle === event.target.value);
+            },
+            showFilter() {
+                document.getElementById("filter").style.display="block";
+            },
+            closeFilter() {
+                document.getElementById("filter").style.display="none";
+            },
+            addFilter() {
+                let field = document.getElementById('filterField').value;
+                let condition = document.getElementById('filterCondition').value;
+                if(field != null && field != 'Поле' && condition != null && condition != 'Операция') {
+
+                    this.filter = {
+                        field,
+                        condition 
+                    }
+                    document.getElementById("filter").style.display="none";
+                }
+            },
+            removeFilter() {
+                this.filter = null;
+            },
+            defineFilters(event) {
+                let field = this.selectedTable.fields.find(field => field.userTitle === event.target.value);
+                switch(field.kind) {
+                    case 'varchar': 
+                    case 'text':
+                        this.selectedFilters = this.conditions.row;
+                        break;
+                    case 'tinyint':
+                    case 'int':
+                    case 'bigint':
+                        this.selectedFilters = this.conditions.number;
+                        break;
+                }
+            },
+            showSort() {
+                document.getElementById("sortMenu").style.display="block";
+            },
+            closeSort() {
+                document.getElementById("sortMenu").style.display="none";
+            },
+            addSort() {
+                let field = document.getElementById('fieldForSort').value;
+                let sortKind = document.getElementById('sortSelect').value;
+                if(field == 'Поле') {
+                    field = null;
+                } else if(sortKind == 'Операция') {
+                    sortKind = null;
+                } else {
+                    this.sort = {
+                        field, sortKind
+                    }
+                    document.getElementById("sortMenu").style.display="none";
+                }
+            },
+            removeSort() {
+                this.sort = null;
+            },
+            showGroup() {
+                document.getElementById("group").style.display="block";
+            },
+            closeGroup() {
+                document.getElementById("group").style.display="none";
+            },
+            addGroup() {
+                let field = document.getElementById('fieldForGroup').value;
+                if(field != 'Поле') {
+                    this.group = field;
+                    document.getElementById("group").style.display="none";
+                }
+            },
+            removeGroup() {
+                this.group = null;
+            },
+            sendQuery() {
+                const query = {
+                    dbTitle: localStorage.getItem('dbTitle'),
+                    table: this.selectedTable.techTitle,
+                    fields: this.checkedFields.map(item => item.techTitle),
+                    sort: this.sort,
+                    group: this.group,
+                    limit: this.limit,
+                }
+                console.log(query);
+                axios.post('http://localhost:8080/api/v1/connectedDbs/select', 
+                    query,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                        }
+                    }
+                ).then(response => {
+                    this.rows = response.data.data;
+                    console.log(response.data.data);
+                }).catch(error => {
+                    console.error(error);
+                });
+
+            },
+        },
         async created() {
-            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/table',
-                { headers: {
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/table', {
+                    params: {
+                        dbTitle: localStorage.getItem('dbTitle')
+                    },
+                    headers: {
                         Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                    }, 'x-content-type-options': 'nosniff' })
-            this.dbData = response.data
-            // console.log(this.dbData.data)
+                    }
+            })
+            this.tables = response.data.data
         }
     });
     app.mount('#contructor');
+
 </script>
 </body>
 </html>

@@ -41,7 +41,8 @@
                 })
                     .then(response => {
                         if(response.status === 200) {
-                            window.location.href = 'dbData.html';
+                            localStorage.setItem('dbTitle', db.title);
+                            window.location.href = 'constructor.html';
                         } else {
                             alert('похоже что-то пошло не так');
                         }
@@ -51,7 +52,6 @@
                     });
             },
             goToAddDbPage() {
-                console.log('!!!')
                 window.location.href = 'addDb.html'
             }
         },

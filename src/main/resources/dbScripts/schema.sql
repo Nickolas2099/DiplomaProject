@@ -57,8 +57,11 @@ CREATE TABLE IF NOT EXISTS dynamic_field (
     id BIGSERIAL PRIMARY KEY,
     tech_title VARCHAR(30) NOT NULL,
     user_title VARCHAR(30) NOT NULL,
+    kind VARCHAR(30) NOT NULL,
     table_id BIGINT NOT NULL,
     UNIQUE(table_id, tech_title),
     FOREIGN KEY (table_id) REFERENCES dynamic_table(id)
         ON DELETE CASCADE ON UPDATE CASCADE
 );
+
+-- ALTER TABLE dynamic_field ADD COLUMN kind VARCHAR(30) NOT NULL;
