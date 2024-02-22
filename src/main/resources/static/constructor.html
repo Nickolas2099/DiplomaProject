@@ -42,23 +42,29 @@
                             <input type="checkbox" :id="field.userTitle" :value="field" v-model="checkedFields">
                             <label :for="field.userTitle">{{field.userTitle}}</label>
                         </div>
-                        <br>
-                        <label>Сортировка</label>
-                        <button type="button" class="inner-menu-btn" @click="showSort">+</button>
+                        <div class="justify-between">
+                            <label>Сортировка</label>
+                            <button type="button" class="inner-menu-btn" @click="showSort">+</button>
+                        </div>
                         <div v-if="sort" v-model="sort" class="filter-container">
                             <div class="filter-el">{{sort.field}}</div>
                             <div class="filter-el">{{sort.sortKind}}</div>
                             <div class="filter-el"><button class="close-btn" @click="removeSort">&times;</button></div>
                         </div>
-                        <label>Фильтр</label>
-                        <button type="button" class="inner-menu-btn" @click="showFilter">+</button>
+                        <div class="justify-between">
+                            <label>Фильтр</label>
+                            <button type="button" class="inner-menu-btn" @click="showFilter">+</button>
+                        </div>
                         <div v-if="filter" v-model="filter" class="filter-container">
                             <div class="filter-el">{{filter.field}}</div>
                             <div class="filter-el">{{filter.condition}}</div>
+                            <div class="filter-el">{{filter.value}}</div>
                             <div class="filter-el"><button class="close-btn" @click="removeFilter">&times;</button></div>
                         </div>
-                        <label>Группировка</label>
-                        <button type="button" class="inner-menu-btn" @click="showGroup">+</button>
+                        <div class="justify-between">
+                            <label>Группировка</label>
+                            <button type="button" class="inner-menu-btn" @click="showGroup">+</button>
+                        </div>
                         <div v-if="group" v-model="group" class="filter-container">
                             <div class="filter-el">{{group}}</div>
                             <div class="filter-el"><button class="close-btn" @click="removeGroup">&times;</button></div>
@@ -74,6 +80,9 @@
             </div>
             <div class="justify-between">
                 <button type="button" class="outer-menu-btn" @click="sendQuery">Выполнить запрос</button>
+            </div>
+            <div>
+                <button type="button" @click="goDbData">Все таблицы</button>
             </div>
 
             <div id="sortMenu" class="popUp">
@@ -97,7 +106,8 @@
                     </div>
                 </div>
                 <div class="justify-end">
-                    <button class="send-btn" @click="addSort">Применить</button>
+                    <button class="add-btn" @click="addSort">+</button>
+                    <button class="send-btn" @click="acceptSort">Применить</button>
                 </div>
             </div>
 
@@ -114,16 +124,23 @@
                             <option v-if="selectedTable" v-for="field in selectedTable.fields">{{field.userTitle}}</option>
                         </select>
                     </div>
-                    <div>
-                        <select id="filterCondition" class="row-input">
+                    <div class="row-element">
+                        <select id="filterCondition" class="row-input" @change="changeFilterType">
                             <option disabled selected>Операция</option>
-                            <option v-if="selectedFilters" v-for="filter in selectedFilters">{{filter}}</option>
+                            <option v-if="conditions" v-for="filter in conditions">{{filter}}</option>
                             <option>IS NULL</option>
                             <option>IS NOT NULL</option>
                         </select>
                     </div>
+                    <div class="row-element" v-if="selectedFilterType === 'text'">
+                        <input id="textValue" maxlength="10" type="text" class="row-input" placeholder="Значение">
+                    </div>
+                    <div class="row-element" v-if="selectedFilterType === 'number'">
+                        <input id="numberValue" max="1000000" type="number" class="row-input" placeholder="Число">
+                    </div>
                 </div>
                 <div class="justify-end">
+                    <button class="add-btn">+</button>
                     <button class="send-btn" @click="addFilter">Применить</button>
                 </div>
             </div>
@@ -143,6 +160,7 @@
                     </div>
                 </div>
                 <div class="justify-end">
+                    <button class="add-btn">+</button>
                     <button class="send-btn" @click="addGroup">Применить</button>
                 </div>
             </div>
@@ -164,12 +182,9 @@
                 filter: null,
                 group: null,
                 limit: "10",
-                conditions: {
-                    number: ['=', '!=', '<', '>', '<=', '>='],
-                    row: ['LIKE', 'NOT LIKE', 'CONTAINS', 'Начинается с', 'Заканчивается на']
-                },
-                selectedFilters: null,
-                rows: null
+                conditions: null,
+                rows: null,
+                selectedFilterType: null
             };
         },
         methods: {
@@ -187,9 +202,24 @@
                 let condition = document.getElementById('filterCondition').value;
                 if(field != null && field != 'Поле' && condition != null && condition != 'Операция') {
 
-                    this.filter = {
-                        field,
-                        condition 
+                    let textElement = document.getElementById('textValue');
+                    let value = textElement ? textElement.value : null;
+                    if(value == null) {
+                        textElement = document.getElementById('numberValue');
+                        value = textElement ? textElement.value : null;
+                    }
+
+                    if(value == null) {
+                        this.filter = {
+                            field,
+                            condition 
+                        }
+                    } else {
+                        this.filter = {
+                            field,
+                            condition,
+                            value 
+                        }
                     }
                     document.getElementById("filter").style.display="none";
                 }
@@ -202,12 +232,15 @@
                 switch(field.kind) {
                     case 'varchar': 
                     case 'text':
-                        this.selectedFilters = this.conditions.row;
+                        this.conditions = ['LIKE', 'NOT LIKE', 'CONTAINS', 'Начинается с', 'Заканчивается на'];
                         break;
                     case 'tinyint':
                     case 'int':
                     case 'bigint':
-                        this.selectedFilters = this.conditions.number;
+                        this.conditions = ['=', '!=', '<', '>', '<=', '>='];
+                        break;
+                    default:
+                        this.conditions = null;
                         break;
                 }
             },
@@ -217,7 +250,7 @@
             closeSort() {
                 document.getElementById("sortMenu").style.display="none";
             },
-            addSort() {
+            acceptSort() {
                 let field = document.getElementById('fieldForSort').value;
                 let sortKind = document.getElementById('sortSelect').value;
                 if(field == 'Поле') {
@@ -230,6 +263,9 @@
                     }
                     document.getElementById("sortMenu").style.display="none";
                 }
+            },
+            addSort() {
+                
             },
             removeSort() {
                 this.sort = null;
@@ -249,6 +285,32 @@
             },
             removeGroup() {
                 this.group = null;
+            },
+            changeFilterType() {
+                let selectedFilter = document.getElementById('filterCondition').value;
+                //можно пофиксить заменив проверку содержимого селекта на поле conditions
+                switch(selectedFilter) {
+                    case 'LIKE':
+                    case 'NOT LIKE':
+                    case 'CONTAINS':
+                    case 'Начинается с':
+                    case 'Заканчивается на':
+
+                        this.selectedFilterType = 'text';
+                        break;
+                    case '=':
+                    case '!=':
+                    case '<':
+                    case '>':
+                    case '<=':
+                    case '>=':
+                        
+                        this.selectedFilterType = 'number';
+                        break;
+                    default:
+                        this.selectedFilterType = null;
+                        break;
+                }
             },
             sendQuery() {
                 const query = {
@@ -274,6 +336,9 @@
                     console.error(error);
                 });
 
+            },
+            goDbData() {
+                window.location.href = 'dbData.html';
             },
         },
         async created() {

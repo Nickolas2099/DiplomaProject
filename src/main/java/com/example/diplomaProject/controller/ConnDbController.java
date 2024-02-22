@@ -76,10 +76,10 @@ public class ConnDbController {
     }
 
     @GetMapping("/db")
-    public ResponseEntity<Response> getAllFromDb() {
+    public ResponseEntity<Response> getAllFromDb(@RequestParam String dbTitle) {
 
         log.info("START endpoint getAllFromDb");
-        ResponseEntity<Response> resp = dynamicDbService.getAll();
+        ResponseEntity<Response> resp = dynamicDbService.getAll(dbTitle);
         log.info("END endpoint getAllFromDb, resp: `{}`", resp);
         return resp;
     }

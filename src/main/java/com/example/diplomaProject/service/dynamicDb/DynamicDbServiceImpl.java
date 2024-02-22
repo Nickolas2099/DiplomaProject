@@ -1,11 +1,12 @@
 package com.example.diplomaProject.service.dynamicDb;
 
+import com.example.diplomaProject.domain.api.allDbData.GetDbDataResp;
+import com.example.diplomaProject.domain.api.allDbData.TableResp;
 import com.example.diplomaProject.domain.api.constructor.QueryReq;
 import com.example.diplomaProject.domain.api.SwitchDbReq;
 import com.example.diplomaProject.domain.api.constructor.QueryResp;
 import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.ConnDbDto;
-import com.example.diplomaProject.domain.dto.Field;
 import com.example.diplomaProject.domain.dto.Table;
 import com.example.diplomaProject.domain.entity.ConnDb;
 import com.example.diplomaProject.domain.entity.DynamicField;
@@ -32,8 +33,8 @@ import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -46,6 +47,7 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     public static SessionFactory dynamicSessionFactory;
     private String dbName;
 
+    @Deprecated
     @Override
     public ResponseEntity<Response> switchDb(SwitchDbReq req) {
         try {
@@ -68,49 +70,36 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     }
 
     @Override
-    public ResponseEntity<Response> getAll() {
-        try {
-            Session session = dynamicSessionFactory.openSession();
+    public ResponseEntity<Response> getAll(String dbTitle) {
+
+        ConnDb connDb = connDbMapper.toEntity(
+                (ConnDbDto) ((SuccessResponse<ConnDbDto>)connectedDbService.getByTitle(dbTitle).getBody()).getData()
+        );
+        List<Table> tables =
+                (List<Table>)
+                        ((SuccessResponse<List<Table>>)connectedDbService.getTablesByDbTitle(dbTitle ).getBody()).getData();
+
+        SessionFactory sessionFactory = getSessionFactory(connDb);
+
+        try(Session session = sessionFactory.openSession()) {
+
             Transaction tx = session.beginTransaction();
-            //достаём все таблицы из нужной базы данных
-            List<Table> tables =
-                    session.createNativeQuery("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
-                            "WHERE TABLE_SCHEMA = '" + dbName + "' AND TABLE_TYPE = 'BASE TABLE';")
-                            .setResultTransformer(new TableMapper()).list();
-            log.info("enabled tables: {}", tables);
-
-            //достаём все столбцы для каждой из таблиц
+            GetDbDataResp resp = new GetDbDataResp();
+            resp.setTables(new ArrayList<>());
             for(Table table : tables) {
-                table.setFields(
-                        session.createNativeQuery("SELECT COLUMN_NAME, DATA_TYPE " +
-                                        "FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '" + table.getTechTitle() + "';")
-                                .setResultTransformer(new FieldMapper()).list());
+                resp.getTables().add(TableResp.builder().title(table.getUserTitle()).rows(
+                         session.createNativeQuery("SELECT * FROM " + table.getTechTitle())
+                                .setResultTransformer(new ResultMapper()).list()
+                ).build());
             }
-            log.info("enabled tables: {}", tables);
-
-            //достаём все значения каждой колонки
-            for(Table table : tables) {
-                for(Field field : table.getFields()) {
-                    List<Object> values = session.createNativeQuery("SELECT " + field.getTechTitle()
-                            + " FROM " + table.getTechTitle()).list();
-                    List<String> stringValues = values.stream()
-                            .map(Object::toString)
-                            .collect(Collectors.toList());
-                    field.setValue(stringValues);
-                }
-            }
-            log.info("enabled tables: {}", tables);
-
             tx.commit();
-
-            return new ResponseEntity<>(SuccessResponse.builder().data(tables).build(), HttpStatus.OK);
+            session.close();
+            return new ResponseEntity<>(SuccessResponse.builder().data(resp).build(), HttpStatus.OK);
         } catch (Exception ex) {
             log.error(ex.toString());
             return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
                     .code(Code.INTERNAL_SERVER_ERROR).message("Error getting data from the database")
                     .build()).build(), HttpStatus.BAD_REQUEST);
-        } finally {
-            dynamicSessionFactory.close();
         }
     }
 
@@ -256,27 +245,47 @@ public class DynamicDbServiceImpl implements DynamicDbService {
                 sql.append(req.getFilters().get(i).getField());
                 sql.append(" ");
                 sql.append(req.getFilters().get(i).getCondition());
+
+                if(req.getFilters().get(i).getConditionField() != null) {
+                    sql.append(" ");
+                    sql.append(req.getFilters().get(i).getConditionField());
+                }
                 sql.append(" AND");
             }
             sql.append(req.getFilters().get(req.getFilters().size()-1).getField());
             sql.append(" ");
             sql.append(req.getFilters().get(req.getFilters().size()-1).getCondition());
             sql.append(" ");
+
+            if(req.getFilters().get(req.getFilters().size()-1).getConditionField() != null) {
+                sql.append(req.getFilters().get(req.getFilters().size()-1).getConditionField());
+                sql.append(" ");
+            }
         }
 
         //add GROUP BY
-        if(req.getGroupField() != null) {
+        if(req.getGroups() != null) {
             sql.append("GROUP BY ");
-            sql.append(req.getGroupField());
+            for(int i = 0; i < req.getGroups().size()-1; i++) {
+                sql.append(req.getGroups().get(i));
+                sql.append(", ");
+            }
+            sql.append(req.getGroups().get(req.getGroups().size()-1));
             sql.append(" ");
         }
 
         //add ORDER BY
         if(req.getSort() != null) {
             sql.append("ORDER BY ");
-            sql.append(req.getSort().getField());
+            for(int i = 0; i < req.getSort().size()-1; i++) {
+                sql.append(req.getSort().get(i).getField());
+                sql.append(" ");
+                sql.append(req.getSort().get(i).getSortKind());
+                sql.append(", ");
+            }
+            sql.append(req.getSort().get(req.getSort().size()-1).getField());
             sql.append(" ");
-            sql.append(req.getSort().getSortKind());
+            sql.append(req.getSort().get(req.getSort().size()-1).getSortKind());
             sql.append(" ");
         }
 

@@ -13,4 +13,5 @@ public class SqlFilter {
 
     private String field;
     private String condition;
+    private String conditionField;
 }

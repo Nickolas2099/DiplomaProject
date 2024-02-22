@@ -93,9 +93,15 @@ a {
 .center {
     text-align: center;
 }
+
 .justify-center {
     display: flex;
     justify-content: center;
+}
+
+.justify-end {
+    display: flex;
+    justify-content: end;
 }
 
 .p-1 {

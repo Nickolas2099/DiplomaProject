@@ -13,7 +13,7 @@ public interface DynamicDbService {
 
      */
 
-    ResponseEntity<Response> getAll();
+    ResponseEntity<Response> getAll(String dbTitle);
     /*
 
      */
