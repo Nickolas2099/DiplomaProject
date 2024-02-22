@@ -11,16 +11,21 @@
     <h1 class="center">Все записи в базе:</h1>
     <div class="justify-center">
         <div id="dataOutput" class="expand-menu color-first p-1">
-            <table v-for="tableData in dbData.data" :key="tableData.techTitle">
-                <tr>
-                    <td>Таблица: </td>
-                    <td><h3>{{tableData.techTitle}}</h3></td>
-                </tr>
-                <tr v-for="fieldData in tableData.fields" :key="fieldData.techTitle">
-                    <td>{{fieldData.techTitle}}</td>
-                    <td v-for="eachValue in fieldData.value" :key="eachValue">{{eachValue}}</td>
-                </tr>
-            </table>
+            <div v-if="db" v-for="entity in db.tables" :key="entity.title">
+                <h2>{{entity.title}}</h2>
+                <table>
+                    <tr>
+                        <td v-for="field in entity.rows[0].fields" :key="field.userTitle">
+                            {{field.userTitle}}
+                        </td>
+                    </tr>
+                    <tr v-for="row in entity.rows" :key="row.fields[0].userTitle">
+                        <td v-for="field in row.fields" :key="field.value">
+                            {{field.value}}
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 </body>
@@ -28,17 +33,21 @@
     const app = Vue.createApp({
         data() {
             return {
-                dbData: []
+                db: null
             }
         },
         methods: { },
         async created() {
-            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/db',
-                { headers: {
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/db', {
+                    params: {
+                        dbTitle: localStorage.getItem('dbTitle')
+                    },
+                    headers: {
                         Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                    }, 'x-content-type-options': 'nosniff' })
-            this.dbData = response.data
-            console.log(this.dbData.data)
+                    }
+            })
+            this.db = response.data.data;
+            console.log(this.db)
         }
     });
     app.mount('#dataOutput');
