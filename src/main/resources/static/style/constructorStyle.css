@@ -150,7 +150,7 @@ hr {
 .row {
     display: flex;
     justify-content: flex-start;
-    margin-bottom: 50px;
+    margin-bottom: 5px;
 }
 .row-element {
     flex-grow: 1;
@@ -233,6 +233,11 @@ hr {
     animation:zoom .7s;
     z-index: 100;
 }
+.popup-bottom {
+    position: absolute;
+    right: 20px;
+    bottom: 20px;
+}
 
 @keyframes zoom{
     from{transform:scale(0);}
@@ -261,4 +266,14 @@ tr:nth-child(even) {
 
 tr:hover {
     background-color: #ddd;
+}
+
+.rm-btn {
+    border: none;
+    background-color: rgb(221, 163, 168);
+    border-radius: 4px;
+    width: 45px;
+    height: 45px;
+    opacity: 0.9;
+    cursor: pointer;
 }

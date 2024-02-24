@@ -46,10 +46,10 @@
                             <label>Сортировка</label>
                             <button type="button" class="inner-menu-btn" @click="showSort">+</button>
                         </div>
-                        <div v-if="sort" v-model="sort" class="filter-container">
+                        <div v-if="savedSorts" v-for="sort in savedSorts" class="filter-container">
                             <div class="filter-el">{{sort.field}}</div>
-                            <div class="filter-el">{{sort.sortKind}}</div>
-                            <div class="filter-el"><button class="close-btn" @click="removeSort">&times;</button></div>
+                            <div class="filter-el">{{sort.sortType}}</div>
+                            <div class="filter-el"><button class="close-btn" @click="removeSavedSort(sort.field, sort.sortType)">&times;</button></div>
                         </div>
                         <div class="justify-between">
                             <label>Фильтр</label>
@@ -90,23 +90,26 @@
                     <h2>Добавить сортировку</h2>
                     <button @click="closeSort" class="close-btn">&times;</button>
                 </div>
-                <div class="row">
+                <div v-for="sort in sorts" class="row">
                     <div class="row-element">
-                        <select id="fieldForSort" class="row-input">
+                        <select v-model="sort.field" class="row-input">
                             <option disabled selected>Поле</option>
                             <option v-if="selectedTable" v-for="field in selectedTable.fields">{{field.userTitle}}</option>
                         </select>
                     </div>
                     <div>
-                        <select id="sortSelect" class="row-input">
+                        <select v-model="sort.sortType" class="row-input">
                             <option disabled selected>Операция</option>
                             <option value="ASC">по возрастанию</option>
                             <option value="DESC">по убыванию</option>
                         </select>
                     </div>
+                    <div v-if="sorts.length > 1">
+                        <button @click="removeSort(sort.field, sort.sortType)" class="rm-btn">-</button>
+                    </div>
                 </div>
-                <div class="justify-end">
-                    <button class="add-btn" @click="addSort">+</button>
+                <div class="popup-bottom">
+                    <button class="send-btn" @click="addSort">Добавить</button>
                     <button class="send-btn" @click="acceptSort">Применить</button>
                 </div>
             </div>
@@ -178,7 +181,13 @@
                 tables: [],
                 selectedTable: null,
                 checkedFields: [],
-                sort: null,
+                sorts: [
+                    {
+                        field: 'Поле',
+                        sortType: 'Операция'
+                    }
+                ],
+                savedSorts: null,
                 filter: null,
                 group: null,
                 limit: "10",
@@ -249,26 +258,36 @@
             },
             closeSort() {
                 document.getElementById("sortMenu").style.display="none";
+                this.sorts = [
+                        {
+                            field: 'Поле',
+                            sortType: 'Операция'
+                        }
+                    ]
             },
             acceptSort() {
-                let field = document.getElementById('fieldForSort').value;
-                let sortKind = document.getElementById('sortSelect').value;
-                if(field == 'Поле') {
-                    field = null;
-                } else if(sortKind == 'Операция') {
-                    sortKind = null;
-                } else {
-                    this.sort = {
-                        field, sortKind
-                    }
-                    document.getElementById("sortMenu").style.display="none";
-                }
+                this.savedSorts = this.sorts.filter(sort => sort.field !== 'Поле' && sort.sortType !== 'Операция');
+                document.getElementById("sortMenu").style.display="none";
             },
             addSort() {
-                
+                if(this.sorts.length < 3) {
+                        this.sorts.push({
+                            field: 'Поле',
+                            sortType: 'Операция'
+                        });
+                    }
             },
-            removeSort() {
-                this.sort = null;
+            removeSort(field, sortType) {
+                let index = this.sorts.findIndex(s => s.field === field && s.sortType === sortType);
+                if (index !== -1) {
+                    this.sorts.splice(index, 1);
+                }
+            },
+            removeSavedSort(field, sortType) {
+                let index = this.savedSorts.findIndex(s => s.field === field && s.sortType === sortType);
+                if (index !== -1) {
+                    this.savedSorts.splice(index, 1);
+                }
             },
             showGroup() {
                 document.getElementById("group").style.display="block";
@@ -288,7 +307,6 @@
             },
             changeFilterType() {
                 let selectedFilter = document.getElementById('filterCondition').value;
-                //можно пофиксить заменив проверку содержимого селекта на поле conditions
                 switch(selectedFilter) {
                     case 'LIKE':
                     case 'NOT LIKE':
@@ -317,7 +335,7 @@
                     dbTitle: localStorage.getItem('dbTitle'),
                     table: this.selectedTable.techTitle,
                     fields: this.checkedFields.map(item => item.techTitle),
-                    sort: this.sort,
+                    sorts: this.savedSorts,
                     group: this.group,
                     limit: this.limit,
                 }

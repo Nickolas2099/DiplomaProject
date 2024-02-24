@@ -275,17 +275,17 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         }
 
         //add ORDER BY
-        if(req.getSort() != null) {
+        if(req.getSorts() != null) {
             sql.append("ORDER BY ");
-            for(int i = 0; i < req.getSort().size()-1; i++) {
-                sql.append(req.getSort().get(i).getField());
+            for(int i = 0; i < req.getSorts().size()-1; i++) {
+                sql.append(req.getSorts().get(i).getField());
                 sql.append(" ");
-                sql.append(req.getSort().get(i).getSortKind());
+                sql.append(req.getSorts().get(i).getSortType());
                 sql.append(", ");
             }
-            sql.append(req.getSort().get(req.getSort().size()-1).getField());
+            sql.append(req.getSorts().get(req.getSorts().size()-1).getField());
             sql.append(" ");
-            sql.append(req.getSort().get(req.getSort().size()-1).getSortKind());
+            sql.append(req.getSorts().get(req.getSorts().size()-1).getSortType());
             sql.append(" ");
         }
 

@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class Sort {
 
     private String field;
-    private String sortKind;
+    private String sortType;
 }

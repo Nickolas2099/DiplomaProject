@@ -17,7 +17,7 @@ public class QueryReq {
     private String table;
     private List<String> fields;
     private List<SqlFilter> filters;
-    private List<Sort> sort;
+    private List<Sort> sorts;
     private List<String> groups;
     private Integer limit;
 
