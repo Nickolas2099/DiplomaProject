@@ -31,7 +31,9 @@
             </div>
         </div>
         <div class="color-first right-menu">
-            <h2 class="center">Конструктор запросов</h2>
+            <div class="justify-center">
+                <span class="header">Конструктор запросов</span>
+            </div>
             <div class="inner-menu">
                         <label>Таблица</label>
                         <select class="main-select" v-model="selectedTable" @change="updateFields">
@@ -55,20 +57,31 @@
                             <label>Фильтр</label>
                             <button type="button" class="inner-menu-btn" @click="showFilter">+</button>
                         </div>
-                        <div v-if="filter" v-model="filter" class="filter-container">
-                            <div class="filter-el">{{filter.field}}</div>
-                            <div class="filter-el">{{filter.condition}}</div>
-                            <div class="filter-el">{{filter.value}}</div>
-                            <div class="filter-el"><button class="close-btn" @click="removeFilter">&times;</button></div>
+                        <div v-if="savedFilters" v-for="filter in savedFilters"  class="filter-container">
+                            <div class="filter-el">{{filter.field.userTitle}}</div>
+                            <div class="filter-el">{{filter.condition.title}}</div>
+                                <div class="filter-el">{{filter.conditionField}}</div>
+                            <div class="filter-el">
+                                <button class="close-btn" @click="removeSavedFilter(filter.field, filter.condition, filter.conditionField)">&times;</button>
+                            </div>
                         </div>
                         <div class="justify-between">
                             <label>Группировка</label>
                             <button type="button" class="inner-menu-btn" @click="showGroup">+</button>
                         </div>
-                        <div v-if="group" v-model="group" class="filter-container">
+                        <div v-if="group" class="filter-container">
                             <div class="filter-el">{{group}}</div>
                             <div class="filter-el"><button class="close-btn" @click="removeGroup">&times;</button></div>
                         </div>
+                        <div class="justify-between">
+                            <label>Агрегация</label>
+                            <button type="button" class="inner-menu-btn" @click="">+</button>
+                        </div>
+                        <div class="justify-between">
+                            <label>Добавление таблицы</label>
+                            <button type="button" class="inner-menu-btn" @click="">+</button>
+                        </div>
+                        
                         <label>Лимит</label>
                         <select class="main-select" v-model="limit">
                             <option>5</option>
@@ -120,31 +133,36 @@
                     <h2>Добавить фильтр</h2>
                     <button @click="closeFilter" class="close-btn">&times;</button>
                 </div>
-                <div class="row">
+                <div v-for="filter in filters" class="row">
                     <div class="row-element">
-                        <select id="filterField" class="row-input" @change="defineFilters">
-                            <option disabled selected>Поле</option>
-                            <option v-if="selectedTable" v-for="field in selectedTable.fields">{{field.userTitle}}</option>
+                        <select class="row-input" v-model="filter.field" @change="onChangeFieldFromFilter(filter)">
+                            <option disabled value="">Поле</option>
+                            <option v-if="selectedTable" v-for="tableField in selectedTable.fields" :value="tableField">{{tableField.userTitle}}</option>
                         </select>
                     </div>
-                    <div class="row-element">
-                        <select id="filterCondition" class="row-input" @change="changeFilterType">
-                            <option disabled selected>Операция</option>
-                            <option v-if="conditions" v-for="filter in conditions">{{filter}}</option>
-                            <option>IS NULL</option>
-                            <option>IS NOT NULL</option>
+                    <div class="row-element" v-if="filter.field.type === 'row' || filter.field.type === 'number'">
+                        <select class="row-input" v-if="filter.field.type === 'row'" v-model="filter.condition">
+                            <option disabled value="">Операция</option>
+                            <option v-for="condition in conditions.row" :value="condition">{{condition.title}}</option>
+                        </select>
+                        <select class="row-input" v-if="filter.field.type === 'number'" v-model="filter.condition">
+                            <option disabled value="">Операция</option>
+                            <option v-for="condition in conditions.number" :value="condition">{{condition.title}}</option>
                         </select>
                     </div>
-                    <div class="row-element" v-if="selectedFilterType === 'text'">
-                        <input id="textValue" maxlength="10" type="text" class="row-input" placeholder="Значение">
+                    <div class="row-element" v-if="filter.field.type === 'row' && filter.condition.isThereField === true">
+                        <input v-model="filter.conditionField" maxlength="10" type="text" class="row-input" placeholder="Значение">
                     </div>
-                    <div class="row-element" v-if="selectedFilterType === 'number'">
-                        <input id="numberValue" max="1000000" type="number" class="row-input" placeholder="Число">
+                    <div class="row-element" v-if="filter.field.type === 'number' && filter.condition.isThereField === true">
+                        <input v-model="filter.conditionField" max="1000000" type="number" class="row-input" placeholder="Число">
+                    </div>
+                    <div v-if="filters.length > 1">
+                        <button @click="removeFilter(filter.field, filter.condition, filter.conditionField)" class="rm-btn">-</button>
                     </div>
                 </div>
                 <div class="justify-end">
-                    <button class="add-btn">+</button>
-                    <button class="send-btn" @click="addFilter">Применить</button>
+                    <button class="add-btn" @click="addFilter">+</button>
+                    <button class="send-btn" @click="acceptFilters">Применить</button>
                 </div>
             </div>
 
@@ -167,6 +185,21 @@
                     <button class="send-btn" @click="addGroup">Применить</button>
                 </div>
             </div>
+
+            <div id="join" class="popUp">
+                <div class="justify-between">
+                    <h2>Присоединить таблицу</h2>
+                    <button @click="closeGroup" class="close-btn">&times;</button>
+                </div>
+                <div class="row">
+                    <div class="row-element">
+                        <select>
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 <script>
@@ -180,6 +213,7 @@
             return {
                 tables: [],
                 selectedTable: null,
+                rows: null,
                 checkedFields: [],
                 sorts: [
                     {
@@ -188,16 +222,36 @@
                     }
                 ],
                 savedSorts: null,
-                filter: null,
+                filters: [{
+                        field: {
+                            userTitle: 'Поле', 
+                            techTitle: null,
+                            type: null
+                        },
+                        condition: {
+                            title: 'Операция',
+                            isThereField: false
+                        },
+                        conditionField: null
+                    }
+                ],
+                savedFilters: null,
+                conditions: {
+                    row: [{title: 'LIKE', isThereField: true}, {title: 'NOT LIKE', isThereField: true}, {title: 'CONTAINS', isThereField: true}, 
+                    {title: 'Начинается с', isThereField: true}, {title: 'Заканчивается на', isThereField: true}, {title: 'IS NOT NULL', isThereField: false}, 
+                    {title: 'IS NULL', isThereField: false}],
+                    
+                    number: [{title: '=', isThereField: true}, {title: '!=', isThereField: true}, {title: '>', isThereField: true},
+                    {title: '<', isThereField: true}, {title: '<=', isThereField: true}, {title: '>=', isThereField: true}, {title: 'IS NOT NULL', isThereField: false}, 
+                    {title: 'IS NULL', isThereField: false}]
+                },
                 group: null,
-                limit: "10",
-                conditions: null,
-                rows: null,
-                selectedFilterType: null
+                limit: "10" 
             };
         },
         methods: {
             updateFields(event) {
+                // this.selectedTable = this.tables.find(table => table.userTitle === event.target.value);
                 this.selectedTable = this.tables.find(table => table.userTitle === event.target.value);
             },
             showFilter() {
@@ -207,50 +261,47 @@
                 document.getElementById("filter").style.display="none";
             },
             addFilter() {
-                let field = document.getElementById('filterField').value;
-                let condition = document.getElementById('filterCondition').value;
-                if(field != null && field != 'Поле' && condition != null && condition != 'Операция') {
-
-                    let textElement = document.getElementById('textValue');
-                    let value = textElement ? textElement.value : null;
-                    if(value == null) {
-                        textElement = document.getElementById('numberValue');
-                        value = textElement ? textElement.value : null;
-                    }
-
-                    if(value == null) {
-                        this.filter = {
-                            field,
-                            condition 
-                        }
-                    } else {
-                        this.filter = {
-                            field,
-                            condition,
-                            value 
-                        }
-                    }
-                    document.getElementById("filter").style.display="none";
+                    if(this.filters.length < 3) {
+                        this.filters.push({
+                        field: {
+                            userTitle: 'Поле', 
+                            techTitle: null,
+                            type: null
+                        },
+                        condition: {
+                            title: 'Операция',
+                            isThereField: false
+                        },
+                        conditionField: null
+                    })
                 }
             },
-            removeFilter() {
-                this.filter = null;
+            removeFilter(field, condition, conditionField) {
+                    if(this.filters.length > 1) {
+                        let index = this.filters.findIndex(f => f.field === field && f.condition === condition && f.conditionField === conditionField);
+                        if (index !== -1) {
+                            this.filters.splice(index, 1);
+                        }
+                    }
             },
-            defineFilters(event) {
-                let field = this.selectedTable.fields.find(field => field.userTitle === event.target.value);
-                switch(field.kind) {
-                    case 'varchar': 
-                    case 'text':
-                        this.conditions = ['LIKE', 'NOT LIKE', 'CONTAINS', 'Начинается с', 'Заканчивается на'];
-                        break;
-                    case 'tinyint':
-                    case 'int':
-                    case 'bigint':
-                        this.conditions = ['=', '!=', '<', '>', '<=', '>='];
-                        break;
-                    default:
-                        this.conditions = null;
-                        break;
+            removeSavedFilter(field, condition, conditionField) {
+                let index = this.savedFilters.findIndex(f => f.field === field && f.condition === condition && f.conditionField === conditionField);
+                        if (index !== -1) {
+                            this.savedFilters.splice(index, 1);
+                        }
+            },
+            acceptFilters(event) {
+                this.savedFilters = this.filters.filter(f => f.field !== 'Поле' && f.condition !== 'Операция');
+                document.getElementById("filter").style.display="none";
+            },
+            onChangeFieldFromFilter(filter) {
+                    let index = this.filters.findIndex(f => f === filter);
+                    if(index !== -1) {
+                        this.filters[index].condition = {
+                            title: 'Операция',
+                            isThereField: false
+                        };
+                    this.filters[index].conditionField = null;  
                 }
             },
             showSort() {
@@ -305,41 +356,38 @@
             removeGroup() {
                 this.group = null;
             },
-            changeFilterType() {
-                let selectedFilter = document.getElementById('filterCondition').value;
-                switch(selectedFilter) {
-                    case 'LIKE':
-                    case 'NOT LIKE':
-                    case 'CONTAINS':
-                    case 'Начинается с':
-                    case 'Заканчивается на':
-
-                        this.selectedFilterType = 'text';
-                        break;
-                    case '=':
-                    case '!=':
-                    case '<':
-                    case '>':
-                    case '<=':
-                    case '>=':
-                        
-                        this.selectedFilterType = 'number';
-                        break;
-                    default:
-                        this.selectedFilterType = null;
-                        break;
+            assembleFilters() {
+                if(this.savedFilters != null) {
+                    let filters = [];
+                    for(let i = 0; i < this.savedFilters.length; i++) {
+                        let filter = {
+                            field: null,
+                            condition: null,
+                            conditionField: null
+                        };
+                        filter.field = this.savedFilters[i].field.techTitle;
+                        filter.condition = this.savedFilters[i].condition.title;
+                        filter.conditionField = this.savedFilters[i].conditionField;
+                        filters.push(filter);
+                        return filters;
+                    }
+                } else {
+                    return null;
                 }
             },
             sendQuery() {
+                let filters = this.assembleFilters();
+               
                 const query = {
                     dbTitle: localStorage.getItem('dbTitle'),
                     table: this.selectedTable.techTitle,
                     fields: this.checkedFields.map(item => item.techTitle),
+                    filters: filters,
                     sorts: this.savedSorts,
                     group: this.group,
                     limit: this.limit,
                 }
-                console.log(query);
+                // console.log(query);
                 axios.post('http://localhost:8080/api/v1/connectedDbs/select', 
                     query,
                     {
@@ -349,11 +397,10 @@
                     }
                 ).then(response => {
                     this.rows = response.data.data;
-                    console.log(response.data.data);
+                    // console.log(response.data.data);
                 }).catch(error => {
                     console.error(error);
                 });
-
             },
             goDbData() {
                 window.location.href = 'dbData.html';
@@ -368,7 +415,35 @@
                         Authorization: `Bearer ${localStorage.getItem('jwt')}`
                     }
             })
-            this.tables = response.data.data
+            this.tables = response.data.data;
+            const typeMapping = {
+                'tinyint': 'number',
+                'smallint': 'number',
+                'mediumint': 'number',
+                'int': 'number',
+                'bigint': 'number',
+                'float': 'number',
+                'double': 'number',
+                'char': 'row',
+                'varchar': 'row',
+                'text': 'row',
+                'date': 'time',
+                'datetime': 'time',
+                'timestamp': 'time',
+                'time': 'time',
+                'year': 'time'
+
+            };
+
+            this.tables.forEach(table => {
+                table.fields.forEach(field => {
+                    if (typeMapping.hasOwnProperty(field.type)) {
+                        field.type = typeMapping[field.type];
+                    }
+                });
+            });
+            this.selectedTable = this.tables[0] || null;
+            // console.log(this.tables);
         }
     });
     app.mount('#contructor');

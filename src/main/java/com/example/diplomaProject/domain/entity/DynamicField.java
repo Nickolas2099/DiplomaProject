@@ -20,7 +20,8 @@ public class DynamicField {
 
     private String techTitle;
 
-    private String kind;
+    @Column(name = "kind")
+    private String type;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "table_id")

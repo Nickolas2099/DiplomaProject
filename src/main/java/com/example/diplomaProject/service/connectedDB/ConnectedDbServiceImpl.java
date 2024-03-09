@@ -3,7 +3,9 @@ package com.example.diplomaProject.service.connectedDB;
 import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.ConnDbDto;
 import com.example.diplomaProject.domain.dto.Field;
+import com.example.diplomaProject.domain.dto.Table;
 import com.example.diplomaProject.domain.entity.ConnDb;
+import com.example.diplomaProject.domain.entity.DynamicTable;
 import com.example.diplomaProject.domain.mapper.connDb.ConnDbMapper;
 import com.example.diplomaProject.domain.mapper.dynamicDb.DynamicTableListMapper;
 import com.example.diplomaProject.domain.response.Response;
@@ -154,9 +156,21 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
         } else {
             db = optionalConnDb.get();
         }
-        log.info("TABLES: {}", db);
-
-        return new ResponseEntity<>(SuccessResponse.builder().data(dynamicTableListMapper.toDtoList(db.getTables())).build(), HttpStatus.OK);
+//        log.info("TABLES: {}", db);
+        List<Table> tables = dynamicTableListMapper.toDtoList(db.getTables());
+//        for(Table table : tables) {
+//            for(Field field : table.getFields()) {
+//                field.setType(switch (field.getType()) {
+//                    case "int" -> {
+//                        yield "number";
+//                    }
+//                    default -> {
+//
+//                    }
+//                });
+//            }
+//        }
+        return new ResponseEntity<>(SuccessResponse.builder().data(tables).build(), HttpStatus.OK);
     }
 
 }

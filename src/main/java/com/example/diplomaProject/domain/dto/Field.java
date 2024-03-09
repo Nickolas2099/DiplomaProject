@@ -17,7 +17,7 @@ public class Field {
 
     private String techTitle;
 
-    private String kind;
+    private String type;
 
     private List<String> value;
 }

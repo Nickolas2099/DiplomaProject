@@ -11,7 +11,7 @@ public class FieldMapper implements ResultTransformer {
     public Object transformTuple(Object[] objects, String[] strings) {
         DynamicField field = new DynamicField();
         field.setTechTitle((String)objects[0]);
-        field.setKind((String)objects[1]);
+        field.setType((String)objects[1]);
         return field;
     }
 
