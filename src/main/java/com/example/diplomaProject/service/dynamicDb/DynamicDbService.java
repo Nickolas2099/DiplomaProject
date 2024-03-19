@@ -28,7 +28,7 @@ public interface DynamicDbService {
 
      */
 
-    ResponseEntity<Response> selectFromDb(QueryReq req);
+    ResponseEntity<Response> selectFromDb(QueryReq req, String jwt);
     /*
 
      */

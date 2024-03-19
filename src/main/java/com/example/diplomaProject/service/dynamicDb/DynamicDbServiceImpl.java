@@ -8,6 +8,7 @@ import com.example.diplomaProject.domain.api.constructor.QueryResp;
 import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.ConnDbDto;
 import com.example.diplomaProject.domain.dto.Table;
+import com.example.diplomaProject.domain.entity.Action;
 import com.example.diplomaProject.domain.entity.ConnDb;
 import com.example.diplomaProject.domain.entity.DynamicField;
 import com.example.diplomaProject.domain.entity.DynamicTable;
@@ -19,7 +20,11 @@ import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
 import com.example.diplomaProject.domain.response.error.ErrorResponse;
+import com.example.diplomaProject.repository.ActionRepository;
+import com.example.diplomaProject.repository.TableRepository;
+import com.example.diplomaProject.repository.UserRepository;
 import com.example.diplomaProject.service.connectedDB.ConnectedDbService;
+import com.example.diplomaProject.service.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.HibernateException;
@@ -35,6 +40,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 @Service
 @Slf4j
@@ -43,6 +49,10 @@ public class DynamicDbServiceImpl implements DynamicDbService {
 
     private final ConnectedDbService connectedDbService;
     private final ConnDbMapper connDbMapper;
+    private final ActionRepository actionRepository;
+    private final TableRepository tableRepository;
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     public static SessionFactory dynamicSessionFactory;
     private String dbName;
@@ -67,6 +77,8 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     private String getDatabaseName(String url) throws URISyntaxException {
         URI uri = new URI(url.substring(5));
         return uri.getPath().substring(1);
+//        String[] parts = url.split("/");
+//            return parts[parts.length - 1];
     }
 
     @Override
@@ -128,6 +140,21 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     public ResponseEntity<Response> handleDb(ConnDbDto connDbDto) {
         ConnDb connDb = connDbMapper.toEntity(connDbDto);
         SessionFactory sessionFactory = getSessionFactory(connDb);
+        switch (connDb.getDbType()) {
+            case MYSQL -> handleMySql(sessionFactory, connDb);
+            case POSTGRESQL -> handlePostgres(sessionFactory, connDb);
+            default -> {
+                return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                        .code(Code.INVALID_VALUE).message("Data base type is not supported").build()).build(),
+                        HttpStatus.BAD_REQUEST);
+            }
+        }
+
+        return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
+    }
+
+    private void handleMySql(SessionFactory sessionFactory, ConnDb connDb) {
+
         try {
             Session session = sessionFactory.openSession();
             Transaction tx = session.beginTransaction();
@@ -152,7 +179,6 @@ public class DynamicDbServiceImpl implements DynamicDbService {
                 }
             }
 
-            tx.commit();
             connDb.setTables(tables);
             for(DynamicTable table : tables) {
                 table.setConnDb(connDb);
@@ -160,23 +186,63 @@ public class DynamicDbServiceImpl implements DynamicDbService {
                     field.setTable(table);
                 }
             }
-            log.info("TABLES: {}", tables);
-
-            return connectedDbService.add(connDb);
+            connectedDbService.add(connDb);
+            tx.commit();
         } catch (Exception ex) {
             log.error(ex.toString());
-            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
-                    .code(Code.INTERNAL_SERVER_ERROR).message("Error getting data from the database")
-                    .build()).build(), HttpStatus.BAD_REQUEST);
         } finally {
             sessionFactory.close();
         }
     }
 
+    public void handlePostgres(SessionFactory sessionFactory, ConnDb connDb) {
+            try {
+                Session session = sessionFactory.openSession();
+                Transaction tx = session.beginTransaction();
+//                String databaseName = getDatabaseName(connDb.getUrl());
+                List<DynamicTable> tables =
+                        session.createNativeQuery("SELECT table_name FROM information_schema.tables " +
+                                        "WHERE table_schema = 'public' AND table_type = 'BASE TABLE';")
+                                .setResultTransformer(new TableMapper()).list();
+                for(DynamicTable table : tables) {
+                    table.setFields(
+                            session.createNativeQuery("SELECT column_name, data_type " +
+                                            "FROM information_schema.columns WHERE table_name = '" + table.getTechTitle() + "';")
+                                    .setResultTransformer(new FieldMapper()).list());
+                }
+                if(tables.get(0).getUserTitle() == null || tables.get(0).getFields().get(0).getTechTitle() == null) {
+                    for(DynamicTable table : tables) {
+                        table.setUserTitle(table.getTechTitle());
+                        for(DynamicField field : table.getFields()) {
+                            field.setUserTitle(field.getTechTitle());
+                        }
+                    }
+                }
+
+                tx.commit();
+                connDb.setTables(tables);
+                for(DynamicTable table : tables) {
+                    table.setConnDb(connDb);
+                    for(DynamicField field : table.getFields()) {
+                        field.setTable(table);
+                    }
+                }
+                log.info("TABLES: {}", tables);
+
+                connectedDbService.add(connDb);
+            } catch (Exception ex) {
+                log.error(ex.toString());
+            } finally {
+                sessionFactory.close();
+            }
+    }
+
     @Override
-    public ResponseEntity<Response> selectFromDb(QueryReq req) {
+    public ResponseEntity<Response> selectFromDb(QueryReq req, String authorization) {
 
         List<QueryResp> resp;
+        String sql;
+        String tableTitle = req.getTable();
         ResponseEntity<Response> response = connectedDbService.getByTitle(req.getDbTitle());
         if(response.getBody() instanceof ErrorResponse) {
             return response;
@@ -184,14 +250,17 @@ public class DynamicDbServiceImpl implements DynamicDbService {
             SessionFactory sessionFactory = getSessionFactory(connDbMapper.toEntity(
                     (ConnDbDto)((SuccessResponse)response.getBody()).getData())
             );
-            String sql = getSqlQuery(req);
+            sql = getSqlQuery(req);
             try {
                 Session session = sessionFactory.openSession();
                 Transaction tx = session.beginTransaction();
 
                 resp = session.createNativeQuery(sql).setResultTransformer(new ResultMapper()).list();
-
+                if(resp == null) {
+                    throw new Exception();
+                }
                 tx.commit();
+
             } catch (Exception ex) {
                 log.error("ERROR: {}", ex.getMessage());
                 return new ResponseEntity<>(ErrorResponse.builder()
@@ -201,9 +270,21 @@ public class DynamicDbServiceImpl implements DynamicDbService {
                 sessionFactory.close();
             }
         }
-
+        this.saveAction(authorization, sql, tableTitle);
         return new ResponseEntity<>(SuccessResponse.builder().data(resp).build(), HttpStatus.OK);
     }
+
+    private void saveAction(String authorization, String sql, String tableTitle) {
+
+        String jwt = authorization.substring(7);
+        actionRepository.save(Action.builder()
+                .queryText(sql)
+                .table(tableRepository.getFirstByTechTitle(tableTitle))
+                .user(userRepository.findByLogin(jwtService.extractUsername(jwt))
+                        .orElseThrow(NoSuchElementException::new))
+                .build());
+    }
+
 
     private SessionFactory getSessionFactory(ConnDb dataBase) {
         Configuration config = new Configuration();
@@ -242,6 +323,7 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         if(req.getFilters() != null) {
             sql.append("WHERE ");
             for(int i = 0; i < req.getFilters().size()-1; i++) {
+
                 sql.append(req.getFilters().get(i).getField());
                 sql.append(" ");
                 sql.append(req.getFilters().get(i).getCondition());

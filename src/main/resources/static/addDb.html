@@ -77,29 +77,27 @@
     methods: {
       async addDataBase(e) {
         e.preventDefault();
-        try {
-          let dbCopy = Object.assign({}, this.db);
-          dbCopy.dbType = dbCopy.dbType.toUpperCase();
-          const response = await axios.post('http://localhost:8080/api/v1/connectedDbs', dbCopy, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem('jwt')}`
-            }
-          })
-          if (response.status === 200) {
+        if(this.title == ' ' || this.username == ' ' || this.password == ' ') {
 
-          } else {
-            alert("Проверьте корректность данных")
+        } else {
+
+          try {
+            let dbCopy = Object.assign({}, this.db);
+            dbCopy.dbType = dbCopy.dbType.toUpperCase();
+            const response = await axios.post('http://localhost:8080/api/v1/connectedDbs', dbCopy, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+              }
+            })
+          if (response.status === 200) {
+            window.location.href = 'dbsMenu.html';
           }
         } catch (error) {
-          console.log(error);
+          alert("Проверьте корректность данных")
         }
+      }
       },
       goBack() {
-        // if (window.history.length > 1) {
-        //   this.$router.go(-1)
-        // } else {
-        //   this.$router.push('dbsMenu.html')
-        // }
         window.location.href = 'dbsMenu.html';
       },
       concatRow() {
@@ -111,16 +109,20 @@
         this.db.url = url;
       },
       testConnection() {
-        const response = axios.get('http://localhost:8080/api/v1/connectedDbs/testConnection', this.db, {
+        // const dbString = encodeURIComponent(JSON.stringify(this.db))
+        const response = axios.get("http://localhost:8080/api/v1/connectedDbs/testConnection", this.db, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`
           }
+        }).then(response => {
+
+          if(response.status === 200) {
+            alert("Содинение успешно")
+          }
+        }).catch(error => {
+          alert("Ошибка соединения");
         })
-        if(response.status === 200) {
-          alert("Содинение успешно")
-        } else {
-          alert("Ошибка соединения")
-        }
+        
       }
     },
     mounted() {

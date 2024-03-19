@@ -158,18 +158,6 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
         }
 //        log.info("TABLES: {}", db);
         List<Table> tables = dynamicTableListMapper.toDtoList(db.getTables());
-//        for(Table table : tables) {
-//            for(Field field : table.getFields()) {
-//                field.setType(switch (field.getType()) {
-//                    case "int" -> {
-//                        yield "number";
-//                    }
-//                    default -> {
-//
-//                    }
-//                });
-//            }
-//        }
         return new ResponseEntity<>(SuccessResponse.builder().data(tables).build(), HttpStatus.OK);
     }
 

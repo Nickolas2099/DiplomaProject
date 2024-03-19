@@ -20,6 +20,7 @@
         </div>
         <div class="justify-end">
             <button type="button" class="color-first menu-btn" @click="goToAddDbPage">Добавить базу</button>
+            <button type="button" class="color-first menu-btn" @click="gotoHistory">История запросов</button>
         </div>
     </div>
 </body>
@@ -55,6 +56,9 @@
             },
             goToAddDbPage() {
                 window.location.href = 'addDb.html'
+            },
+            gotoHistory() {
+                window.location.href = 'recentActions.html'
             }
         },
         async created() {

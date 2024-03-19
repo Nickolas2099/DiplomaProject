@@ -84,7 +84,7 @@ public class ConnDbController {
         return resp;
     }
 
-    @GetMapping("/testConnection")
+    @PostMapping("/testConnection")
     public ResponseEntity<Response> checkDbConnection(@RequestParam final ConnDbDto connDb) {
 
         log.info("START endpoint checkDbConnection");
@@ -103,10 +103,11 @@ public class ConnDbController {
     }
 
     @PostMapping("/select")
-    public ResponseEntity<Response> selectData(@RequestBody final QueryReq req) {
+    public ResponseEntity<Response> selectData(@RequestBody final QueryReq req,
+                                               @RequestHeader("Authorization") final String authorization) {
 
         log.info("START endpoint selectData, req: {}", req);
-        ResponseEntity<Response> resp = dynamicDbService.selectFromDb(req);
+        ResponseEntity<Response> resp = dynamicDbService.selectFromDb(req, authorization);
         log.info("END endpoint selectData, resp `{}`", resp);
         return resp;
     }
