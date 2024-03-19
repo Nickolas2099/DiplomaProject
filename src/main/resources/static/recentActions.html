@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>История</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body id="actions">
+    <button type="button" @click="goBack">Назад</button>
+    <table>
+        <tr>
+            <td>
+                Время
+            </td>
+            <td>
+                Текст запроса
+            </td>
+            <td>
+                Фамилия
+            </td>
+            <td>
+                Имя
+            </td>
+            <td>
+                Таблица
+            </td>
+        </tr>
+        <tr v-for="action in actions">
+            <td>
+                {{action.inputTime}}
+            </td>
+            <td>
+                {{action.queryText}}
+            </td>
+            <td>
+                {{action.user.secondName}}
+            </td>
+            <td>
+                {{action.user.firstName}}
+            </td>
+            <td>
+                {{action.table.userTitle}}
+            </td>
+        </tr>
+    </table>
+
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                actions: []
+            }
+        },
+        methods: {
+            goBack() {
+                window.location.href = 'dbsMenu.html';
+            }
+        },
+        async created() {
+            const response = await axios.get('http://localhost:8080/api/v1/action/recent',
+                { headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }, 'x-content-type-options': 'nosniff' })
+            this.actions = response.data.data;
+        }
+    });
+    app.mount('#actions');
+</script>
+</html>
