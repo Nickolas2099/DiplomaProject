@@ -55,7 +55,6 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     private final UserRepository userRepository;
 
     public static SessionFactory dynamicSessionFactory;
-    private String dbName;
 
     @Deprecated
     @Override
@@ -63,7 +62,7 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         try {
             SuccessResponse response = (SuccessResponse)connectedDbService.getByTitle(req.getTitle()).getBody();
             ConnDb connDb = connDbMapper.toEntity((ConnDbDto)response.getData());
-            dbName = getDatabaseName(connDb.getUrl());
+//            dbName = getDatabaseName(connDb.getUrl());
             dynamicSessionFactory = getSessionFactory(connDb);
             return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
         }catch (Exception ex) {

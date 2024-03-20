@@ -9,12 +9,14 @@ public interface AuthService {
 
     ResponseEntity<Response> register(RegistrationReq req);
     /*
-
+        Saved user.
+        Returning JWT in SuccessResponse.
      */
 
     ResponseEntity<Response> authenticate(AuthenticationReq req);
     /*
-
+        Check request validity/
+        Returning JWT in SuccessResponse.
      */
 
 }

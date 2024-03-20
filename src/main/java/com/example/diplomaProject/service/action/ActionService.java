@@ -6,5 +6,8 @@ import org.springframework.http.ResponseEntity;
 public interface ActionService {
 
     ResponseEntity<Response> getRecent();
+    /*
+        Returning last ten SELECT query entities
+     */
 
 }

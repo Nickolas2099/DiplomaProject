@@ -11,5 +11,8 @@ import java.util.List;
 public interface ExcelService {
 
     ResponseEntity<InputStreamResource> getFile(ExportReq req);
+    /*
+        Returning Excel file with records from ExportReq. Using Apache Poi.
+     */
 
 }
