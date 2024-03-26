@@ -80,6 +80,7 @@ public class DynamicDbServiceImpl implements DynamicDbService {
 //            return parts[parts.length - 1];
     }
 
+    @Deprecated
     @Override
     public ResponseEntity<Response> getAll(String dbTitle) {
 
