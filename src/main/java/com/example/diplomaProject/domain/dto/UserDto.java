@@ -21,6 +21,9 @@ public class UserDto implements UserDetails {
 
     private Long id;
 
+    @NotBlank(message = "логин должен быть заполнен")
+    private String login;
+
     @NotBlank(message = "имя должно быть заполнено")
     private String firstName;
 
@@ -41,7 +44,7 @@ public class UserDto implements UserDetails {
 
     @Override
     public String getUsername() {
-        return this.secondName + " " + this.firstName;
+        return this.login;
     }
 
     @Override

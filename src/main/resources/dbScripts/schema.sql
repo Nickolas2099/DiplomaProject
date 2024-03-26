@@ -5,11 +5,12 @@ CREATE DATABASE diplomdb;
 CREATE TABLE IF NOT EXISTS user_table (
 
 	id BIGSERIAL PRIMARY KEY,
+	login VARCHAR(30) NOT NULL,
 	first_name VARCHAR(30) NOT NULL,
 	second_name VARCHAR(30) NOT NULL,
-	password VARCHAR(50) NOT NULL,
+	password VARCHAR(256) NOT NULL,
 	input_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-	UNIQUE(first_name, second_name)
+	UNIQUE(login)
 );
 
 CREATE TABLE IF NOT EXISTS role_table (
@@ -38,6 +39,42 @@ CREATE TABLE IF NOT EXISTS connected_db (
     url VARCHAR(70) NOT NULL,
     username VARCHAR(30) NOT NULL,
     password VARCHAR(30) NOT NULL,
-
+    input_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(title)
 );
+
+CREATE TABLE IF NOT EXISTS dynamic_table (
+    id BIGSERIAL PRIMARY KEY,
+    tech_title VARCHAR(30) NOT NULL,
+    user_title VARCHAR(30) NOT NULL,
+    db_id BIGINT NOT NULL,
+    UNIQUE(db_id, tech_title),
+    FOREIGN KEY (db_id) REFERENCES connected_db(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS dynamic_field (
+    id BIGSERIAL PRIMARY KEY,
+    tech_title VARCHAR(30) NOT NULL,
+    user_title VARCHAR(30) NOT NULL,
+    kind VARCHAR(30) NOT NULL,
+    table_id BIGINT NOT NULL,
+    UNIQUE(table_id, tech_title),
+    FOREIGN KEY (table_id) REFERENCES dynamic_table(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS action (
+    id BIGSERIAL PRIMARY KEY,
+    query_text VARCHAR(256) NOT NULL,
+    input_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    table_id BIGINT,
+    user_id BIGINT,
+    FOREIGN KEY (table_id) REFERENCES dynamic_table(id)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES user_table(id)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+-- ALTER TABLE dynamic_field ADD COLUMN kind VARCHAR(30) NOT NULL;

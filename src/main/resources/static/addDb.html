@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style/dbAddStyle.css">
+    <title>Добавление базы данных</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body>
+  <div id="app">
+    <div class="container">
+      
+      <div class="menu-style color-first center-menu">
+        <h2 class="center m6">Подключение</h2>
+        <label>Url</label>
+        <div class="center">
+          <input v-model="db.url" type="text" id="url" readonly>
+        </div>
+        <label for="title">Отображаемое название</label>
+        <div class="center">
+          <input v-model="db.title" type="text" id="title" required>
+        </div>
+        <label>Пользователь</label>
+        <div class="center">
+          <input v-model="db.username" type="text"id="username" required>        
+        </div>
+        <label for="password">Пароль</label>
+        <div class="center">
+          <input v-model="db.password" type="password" id="password" required>
+        </div>
+        <div class="justify-end">
+          <button class="check-btn color-second" @click="testConnection">Проверить</button>
+        </div>
+      </div>
+      
+      <div class="color-first right-menu">
+        <h3 class="center">Параметры адреса</h3>
+        <div class="m2">
+          <div>
+            Тип базы
+          </div>
+          <input v-model="db.dbType" type="radio" id="postgresql" value="postgresql" name="dbType" class="inputPart" checked>
+          <label for="postgresql">postgresql</label>
+          <input v-model="db.dbType" type="radio" id="mysql" value="mysql" class="inputPart" name="dbType">
+          <label for="mysql">mysql</label>
+        </div>
+        
+        <label>Название</label>
+        <input type="text" id="tech-title" class="inputPart" required>
+        <label>Адрес</label>
+        <input type="text" id="address" class="inputPart" required>
+        <label>Порт</label>
+        <input type="text" id="port" class="inputPart" required>
+      </div>
+    </div>
+    <div class="justify-center">
+      <button class="menu-btn color-first" @click="goBack">Назад</button>
+      <button class="menu-btn color-second" @click="addDataBase">Добавить</button>
+    </div>
+    
+  </div>
+</body>
+<script>
+  const app = Vue.createApp({
+    data() {
+      return {
+        db: {
+          title: '',
+          url: '',
+          dbType: 'POSTGRESQL',
+          username: '',
+          password: ''
+        }
+      }
+    },
+    methods: {
+      async addDataBase(e) {
+        e.preventDefault();
+        if(this.title == ' ' || this.username == ' ' || this.password == ' ') {
+
+        } else {
+
+          try {
+            let dbCopy = Object.assign({}, this.db);
+            dbCopy.dbType = dbCopy.dbType.toUpperCase();
+            const response = await axios.post('http://localhost:8080/api/v1/connectedDbs', dbCopy, {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem('jwt')}`
+              }
+            })
+          if (response.status === 200) {
+            window.location.href = 'dbsMenu.html';
+          }
+        } catch (error) {
+          alert("Проверьте корректность данных")
+        }
+      }
+      },
+      goBack() {
+        window.location.href = 'dbsMenu.html';
+      },
+      concatRow() {
+        let kind = document.querySelector('input[name="dbType"]:checked').value;
+        let title = document.getElementById('tech-title').value;
+        let address = document.getElementById('address').value;
+        let port = document.getElementById('port').value;
+        let url = "jdbc:" + kind + "://" + address + ":" + port + "/" + title;
+        this.db.url = url;
+      },
+      testConnection() {
+        // const dbString = encodeURIComponent(JSON.stringify(this.db))
+        const response = axios.get("http://localhost:8080/api/v1/connectedDbs/testConnection", this.db, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('jwt')}`
+          }
+        }).then(response => {
+
+          if(response.status === 200) {
+            alert("Содинение успешно")
+          }
+        }).catch(error => {
+          alert("Ошибка соединения");
+        })
+        
+      }
+    },
+    mounted() {
+      this.concatRow();
+      document.querySelectorAll('.inputPart').forEach((input) => {
+        input.addEventListener('input', (event) => {
+          this.concatRow();
+        });
+      });
+    }
+  })
+  app.mount('#app');
+</script>
+</html>

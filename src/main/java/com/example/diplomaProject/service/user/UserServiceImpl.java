@@ -32,12 +32,12 @@ import java.util.Set;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService, UserDetailsService {
+public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ValidationUtils validation;
-    private final EncryptPassword encryptPassword;
+//    private final EncryptPassword encryptPassword;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
 
     private final UserListMapper userListMapper;
@@ -133,27 +133,27 @@ public class UserServiceImpl implements UserService, UserDetailsService {
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
     }
 
-    @Override
-    public ResponseEntity<Response> getByFullName(String fullName) {
+//    @Override
+//    public ResponseEntity<Response> getByFullName(String fullName) {
+//
+//        UserDto user = (UserDto) loadUserByUsername(fullName);
+//        return new ResponseEntity<>(SuccessResponse.builder().data(user).build(), HttpStatus.OK);
+//    }
 
-        UserDto user = (UserDto) loadUserByUsername(fullName);
-        return new ResponseEntity<>(SuccessResponse.builder().data(user).build(), HttpStatus.OK);
-    }
 
-
-    @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        String [] secondAndFirstName = username.split(" ");
-        if(secondAndFirstName.length != 2) {
-            log.error("user with name `{}` not found", username);
-            throw new UsernameNotFoundException("user with name `" + username + "` not found");
-        }
-        String secondName = secondAndFirstName[0];
-        String firstName = secondAndFirstName[1];
-        User user = userRepository.findBySecondNameAndFirstName(secondName, firstName)
-                .orElseThrow(() ->
-                    new UsernameNotFoundException("user with name `" + secondName + " " + firstName + "` not found")
-                );
-        return userMapper.toDto(user);
-    }
+//    @Override
+//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+//        String [] secondAndFirstName = username.split(" ");
+//        if(secondAndFirstName.length != 2) {
+//            log.error("user with name `{}` not found", username);
+//            throw new UsernameNotFoundException("user with name `" + username + "` not found");
+//        }
+//        String secondName = secondAndFirstName[0];
+//        String firstName = secondAndFirstName[1];
+//        User user = userRepository.findBySecondNameAndFirstName(secondName, firstName)
+//                .orElseThrow(() ->
+//                    new UsernameNotFoundException("user with name `" + secondName + " " + firstName + "` not found")
+//                );
+//        return userMapper.toDto(user);
+//    }
 }

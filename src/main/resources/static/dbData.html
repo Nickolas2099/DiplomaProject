@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style/auth.css">
+    <title>Вывод данных</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body>
+    <h1 class="center">Все записи в базе:</h1>
+    <div class="justify-center">
+        <div id="dataOutput" class="expand-menu color-first p-1">
+            <div v-if="db" v-for="entity in db.tables" :key="entity.title">
+                <h2>{{entity.title}}</h2>
+                <table>
+                    <tr>
+                        <td v-for="field in entity.rows[0].fields" :key="field.userTitle">
+                            {{field.userTitle}}
+                        </td>
+                    </tr>
+                    <tr v-for="row in entity.rows" :key="row.fields[0].userTitle">
+                        <td v-for="field in row.fields" :key="field.value">
+                            {{field.value}}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                db: null
+            }
+        },
+        methods: { },
+        async created() {
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs/db', {
+                    params: {
+                        dbTitle: localStorage.getItem('dbTitle')
+                    },
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }
+            })
+            this.db = response.data.data;
+            console.log(this.db)
+        }
+    });
+    app.mount('#dataOutput');
+</script>
+</html>

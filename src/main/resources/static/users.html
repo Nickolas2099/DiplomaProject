@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+    <title>Users</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<body>
+    <div id="app">
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Surname</th>
+                <th>Registration time</th>
+            </tr>
+            </thead>
+            <tbody>
+<!--                    v-if="users">-->
+            <tr v-for="user in users.data" :key="user.id">
+                <td>{{user.firstName}}</td>
+                <td>{{user.secondName}}</td>
+                <td>{{user.inputTime}}</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                users: []
+            }
+        },
+        async created() {
+            try {
+                const response = await fetch('http://localhost:8080/api/v1/users')
+                const data = await response.json()
+                this.users = data
+
+                console.log(this.users)
+            } catch (error) {
+                console.log(error)
+            }
+        }
+    })
+
+    app.mount('#app')
+</script>
+</html>

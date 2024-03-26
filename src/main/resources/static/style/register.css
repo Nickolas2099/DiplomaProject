@@ -1,0 +1,62 @@
+* {
+    box-sizing: border-box;
+}
+
+.container {
+    padding: 5px 50px 45px 50px;
+    border-radius: 20px;
+    width: 400px;
+    height: 440px;
+}
+
+.menuheader {
+    text-align: center;
+    margin-bottom: 70px;
+}
+
+input[type=text], input[type=password] {
+    background-color: rgb(197, 209, 195);
+    width: 100%;
+    padding: 7px;
+    margin: 0 0 15px 0;
+    display: inline-block;
+    border-radius: 8px;
+    border: none;
+}
+
+input[type=text]:focus, input[type=password]:focus {
+    outline: none;
+    background-color: rgb(182, 202, 178);
+}
+
+.registerbtn {
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin: 22px 0;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    opacity: 0.9;
+}
+
+.registerbtn:hover {
+    opacity: 1;
+}
+
+.body {
+    display: flex;
+    justify-content: center;
+    padding-top: 75px;
+}
+
+.color1 {
+    background-color: rgb(229, 235, 228);
+}
+
+.color2 {
+    background-color: rgb(197, 209, 195);
+}
+
+.color3 {
+    background-color: rgb(182, 202, 178);
+}

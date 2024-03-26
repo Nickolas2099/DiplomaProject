@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="style/auth.css">
+    <title>Data bases</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body>
+    <div id="dbs">
+        <h1 class="center">Сохранённые базы данных:</h1>
+        <div class="justify-center">
+            <div class="expand-menu color-first">
+                <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="color-second db-el">
+                    <h3>{{db.title}}</h3>
+                    <p>{{db.dbType}}</p>
+                </div>
+            </div>
+        </div>
+        <div class="justify-end">
+            <button type="button" class="color-first menu-btn" @click="goToAddDbPage">Добавить базу</button>
+            <button type="button" class="color-first menu-btn" @click="gotoHistory">История запросов</button>
+        </div>
+    </div>
+</body>
+
+<script>
+    const app = Vue.createApp({
+        data() {
+            return {
+                dbs: []
+            }
+        },
+        methods: {
+            switchDb(e, db) {
+                e.preventDefault();
+                axios.post('http://localhost:8080/api/v1/connectedDbs/switch', {
+                    title: db.title
+                }, { 
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }
+                })
+                    .then(response => {
+                        if(response.status === 200) {
+                            localStorage.setItem('dbTitle', db.title);
+                            window.location.href = 'constructor.html';
+                        } else {
+                            alert('похоже что-то пошло не так');
+                        }
+                    })
+                    .catch(error => {
+                        console.error(error);
+                    });
+            },
+            goToAddDbPage() {
+                window.location.href = 'addDb.html'
+            },
+            gotoHistory() {
+                window.location.href = 'recentActions.html'
+            }
+        },
+        async created() {
+            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs',
+                { headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }, 'x-content-type-options': 'nosniff' })
+            this.dbs = response.data
+            console.log(this.dbs)
+        }
+    });
+    app.mount('#dbs');
+</script>
+</html>

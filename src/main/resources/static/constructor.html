@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style/constructorStyle.css">
+    <style>
+        
+    </style>
+    <title>Конструктор запросов</title>
+</head>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body>
+    <div id="contructor" class="container">
+
+        <div class="color-first center-menu">
+            <div id="dataOutput">
+                <table v-if="rows">
+                    <tr>
+                        <td v-for="field in rows[0].fields" :key="field.userTitle">
+                            {{field.userTitle}}
+                        </td>
+                    </tr>
+                    <tr v-for="row in rows" :key="row.fields[0].value">
+                        <td v-for="field in row.fields" :key="field.value">
+                            {{field.value}}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="color-first right-menu">
+            <div class="justify-center">
+                <span class="header">Конструктор запросов</span>
+            </div>
+            <div class="inner-menu">
+                        <label>Таблица</label>
+                        <select class="main-select" v-model="selectedTable" @change="updateFields">
+                            <option v-for="(table, index) in tables" :value="table.techTitle" :key="index">{{table.userTitle}}</option>
+                        </select>
+                        <label>Поля</label>
+                        <div v-if="selectedTable" v-for="field in fields">
+                            <input type="checkbox" :id="field.userTitle" :value="field" v-model="checkedFields">
+                            <label :for="field.userTitle">{{field.userTitle}}</label>
+                        </div>
+                        <div class="justify-between">
+                            <label>Сортировка</label>
+                            <button type="button" class="inner-menu-btn" @click="showSort">+</button>
+                        </div>
+                        <div v-if="savedSorts" v-for="sort in savedSorts" class="filter-container">
+                            <div class="filter-el">{{sort.field}}</div>
+                            <div class="filter-el">{{sort.sortType}}</div>
+                            <div class="filter-el"><button class="close-btn" @click="removeSavedSort(sort.field, sort.sortType)">&times;</button></div>
+                        </div>
+                        <div class="justify-between">
+                            <label>Фильтр</label>
+                            <button type="button" class="inner-menu-btn" @click="showFilter">+</button>
+                        </div>
+                        <div v-if="savedFilters" v-for="filter in savedFilters"  class="filter-container">
+                            <div class="filter-el">{{filter.field.userTitle}}</div>
+                            <div class="filter-el">{{filter.condition.title}}</div>
+                                <div class="filter-el">{{filter.conditionField}}</div>
+                            <div class="filter-el">
+                                <button class="close-btn" @click="removeSavedFilter(filter.field, filter.condition, filter.conditionField)">&times;</button>
+                            </div>
+                        </div>
+                        <div class="justify-between">
+                            <label>Группировка</label>
+                            <button type="button" class="inner-menu-btn" @click="showGroup">+</button>
+                        </div>
+                        <div v-if="group" class="filter-container">
+                            <div class="filter-el">{{group}}</div>
+                            <div class="filter-el"><button class="close-btn" @click="removeGroup">&times;</button></div>
+                        </div>
+                        <div class="justify-between">
+                            <label>Агрегация</label>
+                            <button type="button" class="inner-menu-btn" @click="">+</button>
+                        </div>
+                        <div class="justify-between">
+                            <label>Добавление таблицы</label>
+                            <button type="button" class="inner-menu-btn" @click="">+</button>
+                        </div>
+                        
+                        <label>Лимит</label>
+                        <select class="main-select" v-model="limit">
+                            <option>5</option>
+                            <option selected>10</option>
+                            <option>20</option>
+                            <option>50</option>
+                            <option>100</option>
+                        </select>
+            </div>
+            <div class="justify-between">
+                <button type="button" class="outer-menu-btn" @click="sendQuery">Выполнить запрос</button>
+            </div>
+            <div class="justify-between">
+                <button type="button" class="outer-menu-btn" @click="goDbData">Все таблицы</button>
+            </div>
+            <div class="justify-between">
+                <button type="button" class="outer-menu-btn" @click="exportSelect">Экспортировать</button>
+            </div>
+
+            <div id="sortMenu" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить сортировку</h2>
+                    <button @click="closeSort" class="close-btn">&times;</button>
+                </div>
+                <div v-for="sort in sorts" class="row">
+                    <div class="row-element">
+                        <select v-model="sort.field" class="row-input">
+                            <option disabled selected>Поле</option>
+                            <option v-if="selectedTable" v-for="field in fields">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <select v-model="sort.sortType" class="row-input">
+                            <option disabled selected>Операция</option>
+                            <option value="ASC">по возрастанию</option>
+                            <option value="DESC">по убыванию</option>
+                        </select>
+                    </div>
+                    <div v-if="sorts.length > 1">
+                        <button @click="removeSort(sort.field, sort.sortType)" class="rm-btn">-</button>
+                    </div>
+                </div>
+                <div class="popup-bottom">
+                    <button class="send-btn" @click="addSort">Добавить</button>
+                    <button class="send-btn" @click="acceptSort">Применить</button>
+                </div>
+            </div>
+
+
+            <div id="filter" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить фильтр</h2>
+                    <button @click="closeFilter" class="close-btn">&times;</button>
+                </div>
+                <div v-for="filter in filters" class="row">
+                    <div class="row-element">
+                        <select class="row-input" v-model="filter.field" @change="onChangeFieldFromFilter(filter)">
+                            <option disabled value="">Поле</option>
+                            <option v-if="selectedTable" v-for="tableField in fields" :value="tableField">{{tableField.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div class="row-element" v-if="filter.field.type === 'row' || filter.field.type === 'number'">
+                        <select class="row-input" v-if="filter.field.type === 'row'" v-model="filter.condition">
+                            <option disabled value="">Операция</option>
+                            <option v-for="condition in conditions.row" :value="condition">{{condition.title}}</option>
+                        </select>
+                        <select class="row-input" v-if="filter.field.type === 'number'" v-model="filter.condition">
+                            <option disabled value="">Операция</option>
+                            <option v-for="condition in conditions.number" :value="condition">{{condition.title}}</option>
+                        </select>
+                    </div>
+                    <div class="row-element" v-if="filter.field.type === 'row' && filter.condition.isThereField === true">
+                        <input v-model="filter.conditionField" maxlength="10" type="text" class="row-input" placeholder="Значение">
+                    </div>
+                    <div class="row-element" v-if="filter.field.type === 'number' && filter.condition.isThereField === true">
+                        <input v-model="filter.conditionField" max="1000000" type="number" class="row-input" placeholder="Число">
+                    </div>
+                    <div v-if="filters.length > 1">
+                        <button @click="removeFilter(filter.field, filter.condition, filter.conditionField)" class="rm-btn">-</button>
+                    </div>
+                </div>
+                <div class="justify-end">
+                    <button class="add-btn" @click="addFilter">+</button>
+                    <button class="send-btn" @click="acceptFilters">Применить</button>
+                </div>
+            </div>
+
+
+            <div id="group" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить группировку</h2>
+                    <button @click="closeGroup" class="close-btn">&times;</button>
+                </div>
+                <div class="row">
+                    <div class="row-element">
+                        <select id="fieldForGroup" class="row-input">
+                            <option disabled selected>Поле</option>
+                            <option v-if="selectedTable" v-for="field in fields">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="justify-end">
+                    <button class="add-btn">+</button>
+                    <button class="send-btn" @click="addGroup">Применить</button>
+                </div>
+            </div>
+
+            <div id="join" class="popUp">
+                <div class="justify-between">
+                    <h2>Присоединить таблицу</h2>
+                    <button @click="closeGroup" class="close-btn">&times;</button>
+                </div>
+                <div class="row">
+                    <div class="row-element">
+                        <select>
+
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+<script src="script/constructor.js"></script>
+</body>
+</html>

@@ -2,19 +2,26 @@ package com.example.diplomaProject.service.connectedDB;
 
 import com.example.diplomaProject.domain.constant.Code;
 import com.example.diplomaProject.domain.dto.ConnDbDto;
+import com.example.diplomaProject.domain.dto.Field;
+import com.example.diplomaProject.domain.dto.Table;
 import com.example.diplomaProject.domain.entity.ConnDb;
+import com.example.diplomaProject.domain.entity.DynamicTable;
 import com.example.diplomaProject.domain.mapper.connDb.ConnDbMapper;
+import com.example.diplomaProject.domain.mapper.dynamicDb.DynamicTableListMapper;
 import com.example.diplomaProject.domain.response.Response;
 import com.example.diplomaProject.domain.response.SuccessResponse;
 import com.example.diplomaProject.domain.response.error.Error;
 import com.example.diplomaProject.domain.response.error.ErrorResponse;
 import com.example.diplomaProject.repository.ConnectedDbRepository;
+import com.example.diplomaProject.repository.FieldRepository;
+import com.example.diplomaProject.repository.TableRepository;
 import com.example.diplomaProject.util.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,12 +29,16 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin
 public class ConnectedDbServiceImpl implements ConnectedDbService {
 
     private final ConnectedDbRepository dbRepository;
+    private final TableRepository tableRepository;
+    private final FieldRepository fieldRepository;
     private final ValidationUtils validationUtils;
-
     private final ConnDbMapper connDbMapper;
+    private final DynamicTableListMapper dynamicTableListMapper;
+
 
     @Override
     public ResponseEntity<Response> add(ConnDbDto connectedDb) {
@@ -35,6 +46,13 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
         validationUtils.validationRequest(connectedDb);
 
         dbRepository.save(connDbMapper.toEntity(connectedDb));
+        return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
+    }
+
+    public ResponseEntity<Response> add(ConnDb connectedDb) {
+
+        validationUtils.validationRequest(connectedDb);
+        dbRepository.save(connectedDb);
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
     }
 
@@ -103,21 +121,44 @@ public class ConnectedDbServiceImpl implements ConnectedDbService {
         }
     }
 
-    private ResponseEntity<Response> switchDb(Long id) {
-//
-//        ConnectedDataBase dataBase = dbRepository.findById(id).get();
-//
-//        Configuration config = new Configuration();
-//        config.setProperty("hibernate.connection.driver_class",
-//                switch (dataBase.getDbType()) {
-//                    case MYSQL -> "com.mysql.jdbc.Driver";
-//                    case POSTGRES -> "org.postgresql.Driver";
-//                    case ORACLE -> "";
-//                } );
-//        config.setProperty("hibernate.connection.url", dataBase.getUrl());
-//        config.setProperty("hibernate.connection.username", dataBase.getPassword());
+    @Override
+    public ResponseEntity<Response> getByTitle(String dbTitle) {
+        dbTitle = dbTitle.trim();
+        if(dbTitle.equals("")) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                    .code(Code.INVALID_VALUE).message("db title is empty").build()).build(), HttpStatus.BAD_REQUEST);
+        }
+        Optional<ConnDb> optionalConnDb = dbRepository.findByTitle(dbTitle);
+        if(optionalConnDb.isEmpty()) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                    .code(Code.NOT_FOUND).message("not found db with name: " + dbTitle).build()).build(),
+                    HttpStatus.BAD_REQUEST);
+        } else {
+            return new ResponseEntity<>(SuccessResponse.builder().data(connDbMapper.toDto(optionalConnDb.get())).build(),
+                    HttpStatus.OK);
+        }
+    }
 
-        return null;
+    @Override
+    public ResponseEntity<Response> getTablesByDbTitle(String dbTitle) {
+
+        dbTitle = dbTitle.trim();
+        if(dbTitle.equals("")) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                    .code(Code.INVALID_VALUE).message("db title is empty").build()).build(), HttpStatus.BAD_REQUEST);
+        }
+        Optional<ConnDb> optionalConnDb = dbRepository.findByTitle(dbTitle);
+        ConnDb db;
+        if(optionalConnDb.isEmpty()) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                    .code(Code.NOT_FOUND).message("not found db with name: " + dbTitle).build()).build(),
+                    HttpStatus.BAD_REQUEST);
+        } else {
+            db = optionalConnDb.get();
+        }
+//        log.info("TABLES: {}", db);
+        List<Table> tables = dynamicTableListMapper.toDtoList(db.getTables());
+        return new ResponseEntity<>(SuccessResponse.builder().data(tables).build(), HttpStatus.OK);
     }
 
 }

@@ -1,0 +1,146 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    padding: 0px;
+    margin: 0px;
+}
+
+input[type=text], input[type=password] {
+    width: 100%;
+    padding: 5px;
+    margin: 5px 0 10px 0;
+    display: inline-block;
+    border-radius: 7px;
+    border: none;
+    background: rgb(197, 209, 195);
+}
+
+input[type=text]:focus, input[type=password]:focus {
+    background-color: rgb(167, 190, 169);
+    outline: none;
+}
+
+input[type="radio"] {
+    appearance: none;
+    outline: none;
+    width: 16px;
+    height: 16px;
+    background-color: rgb(197, 209, 195);
+    border: none;
+    border-radius: 50%;
+    position: relative;
+  }
+  
+  input[type="radio"]::before {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    background-color: rgb(167, 190, 169);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+  
+input[type="radio"]:checked::before {
+    opacity: 1;
+}
+  
+.m2 {
+    margin-bottom: 20px;
+}
+
+.m6 {
+    margin-bottom: 60px;
+}
+
+hr {
+    border: 1px solid rgb(197, 209, 195);
+    margin-bottom: 25px;
+}
+
+.color-first {
+    background-color: rgb(229, 235, 228);
+}
+
+.color-second {
+    background-color: rgb(197, 209, 195);
+}
+
+.menu-style {
+    width: 400px;
+    height: 450px;
+    border-radius: 20px;
+    padding-left: 60px;
+    padding-right: 60px;
+}
+
+.center {
+    text-align: center;
+}
+
+.justify-center {
+    display: flex;
+    justify-content: center;
+}
+
+.justify-end {
+    display: flex;
+    justify-content: end;
+}
+
+.container {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+}
+
+.menu-btn {
+    margin-top: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 10px;
+    border: none;
+    width: 195px;
+    height: 35px;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.check-btn {
+    margin-top: 10px;
+    margin-left: 5px;
+    margin-right: 5px;
+    border-radius: 6px;
+    border: none;
+    width: 110px;
+    height: 28px;
+    cursor: pointer;
+    opacity: 0.9;
+}
+
+.menu-btn:hover, .check-btn:hover {
+    opacity: 1;
+}
+
+.center-menu {
+    margin-top: 100px;
+    margin-right: auto;
+    margin-left: auto;
+}
+  
+.right-menu {
+    position: absolute;
+    right: 0;
+    width: 20%;
+    min-width: 250px;
+    height: 100vh;
+    padding: 35px;
+    padding-top: 60px;
+}
