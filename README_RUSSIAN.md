@@ -1,15 +1,27 @@
-# Query Constructor
+# Конструктор запросов
 
-## What is it about?
+## Разработчик
+Антоненко Николай
 
-The main task of the project is to form SELECT queries to connected databases based on selected parameters.
-Postgres and MySQL are currently supported. Also, the application implies small additional functions.
+## О чем проект
 
-## How to launch
+Основной задачей проекта является формирование select запросов к подключаемым базам данных на основе выбранных параметров.
+В настоящее время поддерживаются базы Postgres и MySQL. Также в приложении реализованы небольшие дополнительные функции, 
+например сохранение истории запросов.
 
-1. download the project
-2. perform docker command to turn on database:
-   - docker run --name pg-db -p <port>:<port> -e POSTGRES_PASSWORD=pgpass -d -v "path to init script":/docker-entrypoint-initdb.d postgres
+## Ближайшие нововведения
+### Конструктор запросов
+- Доделать группировки
+- Доделать JOIN таблиц
+### Роли
+У пользователей уже есть роли, однако необходимо ограничить доступ к некоторым страницам
+для обычных user
+
+## Как запустить
+
+1. скачать содержимое репозитория
+2. выполнить docker команду для запуска базы данных:
+    - docker run --name pg-db -p <port>:<port> -e POSTGRES_PASSWORD=pgpass -d -v "path to init script":/docker-entrypoint-initdb.d postgres
 
 ## Api
 
@@ -38,6 +50,6 @@ Postgres and MySQL are currently supported. Also, the application implies small 
 | ---                                 | ---     | ---                                     |
 | /api/v1/export/excelFile            | post    | return excel file based on query result |
 
-## Database structure
+## Структура базы данных
 
 ![Entity Relation Diagram](/src/main/resources/files/images/ERD.png)
