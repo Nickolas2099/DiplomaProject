@@ -18,7 +18,9 @@ public class QueryReq {
     private List<String> fields;
     private List<SqlFilter> filters;
     private List<Sort> sorts;
-    private List<String> groups;
+    private List<Aggregation> aggregations;
+    private List<Group> groups;
+    private List<Join> joins;
     private Integer limit;
 
 

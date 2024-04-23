@@ -85,7 +85,7 @@ public class ConnDbController {
     }
 
     @PostMapping("/testConnection")
-    public ResponseEntity<Response> checkDbConnection(@RequestParam final ConnDbDto connDb) {
+    public ResponseEntity<Response> checkDbConnection(@RequestBody final ConnDbDto connDb) {
 
         log.info("START endpoint checkDbConnection");
         ResponseEntity<Response> resp = dynamicDbService.checkConnection(connDb);

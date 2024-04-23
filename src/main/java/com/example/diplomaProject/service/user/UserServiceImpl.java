@@ -12,6 +12,7 @@ import com.example.diplomaProject.domain.response.error.Error;
 import com.example.diplomaProject.domain.response.error.ErrorResponse;
 import com.example.diplomaProject.repository.RoleRepository;
 import com.example.diplomaProject.repository.UserRepository;
+import com.example.diplomaProject.service.security.JwtService;
 import com.example.diplomaProject.util.EncryptPassword;
 import com.example.diplomaProject.util.ValidationUtils;
 import lombok.RequiredArgsConstructor;
@@ -37,11 +38,10 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final ValidationUtils validation;
-//    private final EncryptPassword encryptPassword;
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
-
     private final UserListMapper userListMapper;
     private final UserMapper userMapper;
+    private final JwtService jwtService;
 
 
     public ResponseEntity<Response> getAll() {
@@ -72,8 +72,6 @@ public class UserServiceImpl implements UserService {
 
         validation.validationRequest(userDto);
         User user = userMapper.toEntity(userDto);
-
-//        user.setPassword(encryptPassword.encryptPassword(user.getPassword()));
         user.setPassword(bCryptPasswordEncoder.encode(user.getPassword()));
         Set<Role> rolesCopy = new HashSet<>(user.getRoles());
         for(Role role : rolesCopy) {
@@ -133,27 +131,47 @@ public class UserServiceImpl implements UserService {
         return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
     }
 
-//    @Override
-//    public ResponseEntity<Response> getByFullName(String fullName) {
-//
-//        UserDto user = (UserDto) loadUserByUsername(fullName);
-//        return new ResponseEntity<>(SuccessResponse.builder().data(user).build(), HttpStatus.OK);
-//    }
+    @Override
+    public ResponseEntity<Response> assignAdmin(String login) {
 
+        User user = getUserByLogin(login);
+        Role adminRole = roleRepository.findRoleByTitle("ADMIN")
+                .orElseGet(() -> Role.builder().title("ADMIN").build());
+        if(user.getRoles().contains(adminRole)) {
+            return new ResponseEntity<>(ErrorResponse.builder().error(Error.builder()
+                            .message("Admin role already assigned to user with login: `" + login + "`")
+                            .code(Code.BAD_REQUEST)
+                            .build()).build(), HttpStatus.BAD_REQUEST);
+        } else {
+            user.getRoles().add(adminRole);
+            userRepository.save(user);
+        }
+        return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
+    }
 
-//    @Override
-//    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-//        String [] secondAndFirstName = username.split(" ");
-//        if(secondAndFirstName.length != 2) {
-//            log.error("user with name `{}` not found", username);
-//            throw new UsernameNotFoundException("user with name `" + username + "` not found");
-//        }
-//        String secondName = secondAndFirstName[0];
-//        String firstName = secondAndFirstName[1];
-//        User user = userRepository.findBySecondNameAndFirstName(secondName, firstName)
-//                .orElseThrow(() ->
-//                    new UsernameNotFoundException("user with name `" + secondName + " " + firstName + "` not found")
-//                );
-//        return userMapper.toDto(user);
-//    }
+    @Override
+    public ResponseEntity<Response> checkAdminRole(String jwt) {
+
+        String login = jwtService.extractUsername(jwt);
+        User user = getUserByLogin(login);
+        if(hasUserAdminRole(user)) {
+            return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
+        }
+        return new ResponseEntity<>(ErrorResponse.builder()
+                .error(Error.builder().message("user isn't admin").code(Code.FORBIDDEN).build())
+                .build(), HttpStatus.FORBIDDEN);
+    }
+
+    private User getUserByLogin(String login) {
+
+        return userRepository.findByLogin(login)
+                .orElseThrow(() -> new UsernameNotFoundException("User with that login haven't found"));
+    }
+
+    private boolean hasUserAdminRole(User user) {
+        Role adminRole = roleRepository.findRoleByTitle("ADMIN")
+                .orElseGet(() -> Role.builder().title("ADMIN").build());
+        return user.getRoles().contains(adminRole);
+    }
+
 }

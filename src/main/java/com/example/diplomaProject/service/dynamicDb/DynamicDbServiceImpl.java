@@ -62,7 +62,6 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         try {
             SuccessResponse response = (SuccessResponse)connectedDbService.getByTitle(req.getTitle()).getBody();
             ConnDb connDb = connDbMapper.toEntity((ConnDbDto)response.getData());
-//            dbName = getDatabaseName(connDb.getUrl());
             dynamicSessionFactory = getSessionFactory(connDb);
             return new ResponseEntity<>(SuccessResponse.builder().build(), HttpStatus.OK);
         }catch (Exception ex) {
@@ -117,7 +116,7 @@ public class DynamicDbServiceImpl implements DynamicDbService {
 
     @Override
     public ResponseEntity<Response> checkConnection(ConnDbDto connDb) {
-
+            log.info("DB DATA: {}", connDb);
             SessionFactory sessionFactory = getSessionFactory(connDbMapper.toEntity(connDb));
             Session session = null;
             try {
@@ -306,18 +305,49 @@ public class DynamicDbServiceImpl implements DynamicDbService {
     private String getSqlQuery(QueryReq req) {
         StringBuilder sql = new StringBuilder("SELECT ");
 
-        //add fields
-        for(int i = 0; i < req.getFields().size()-1; i++) {
-            sql.append(req.getFields().get(i));
-            sql.append(", ");
+        if(req.getAggregations() != null) {
+            //add aggregations
+            for(int i = 0; i < req.getAggregations().size()-1; i++) {
+                sql.append(req.getAggregations().get(i).getOperation());
+                sql.append(", ");
+            }
+            sql.append(req.getAggregations().get(req.getAggregations().size()-1).getOperation());
+        } else if(req.getFields() != null){
+            //add fields
+            for(int i = 0; i < req.getFields().size()-1; i++) {
+                sql.append(req.getFields().get(i));
+                sql.append(", ");
+            }
+            sql.append(req.getFields().get(req.getFields().size()-1));
         }
-        sql.append(req.getFields().get(req.getFields().size()-1));
         sql.append(" ");
 
         //add FROM
         sql.append("FROM ");
         sql.append(req.getTable());
         sql.append(" ");
+
+        //add JOIN
+        if(req.getJoins() != null) {
+            int lastIndex = req.getJoins().size()-1;
+            for(int i = 0; i < lastIndex; i++) {
+
+                sql.append("JOIN ");
+                sql.append(req.getJoins().get(i).getTable());
+                sql.append(" ON ");
+                sql.append(req.getJoins().get(i).getField());
+                sql.append(" = ");
+                sql.append(req.getJoins().get(i).getTableField());
+            }
+            sql.append(" JOIN ");
+            sql.append(req.getJoins().get(lastIndex).getTable());
+            sql.append(" ON ");
+            sql.append(req.getJoins().get(lastIndex).getField());
+            sql.append(" = ");
+            sql.append(req.getJoins().get(lastIndex).getTableField());
+
+        }
+
 
         //add filter
         if(req.getFilters() != null) {
@@ -349,10 +379,10 @@ public class DynamicDbServiceImpl implements DynamicDbService {
         if(req.getGroups() != null) {
             sql.append("GROUP BY ");
             for(int i = 0; i < req.getGroups().size()-1; i++) {
-                sql.append(req.getGroups().get(i));
+                sql.append(req.getGroups().get(i).getField());
                 sql.append(", ");
             }
-            sql.append(req.getGroups().get(req.getGroups().size()-1));
+            sql.append(req.getGroups().get(req.getGroups().size()-1).getField());
             sql.append(" ");
         }
 

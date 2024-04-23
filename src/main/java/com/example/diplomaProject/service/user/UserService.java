@@ -38,4 +38,15 @@ public interface UserService {
         returning empty successResponse or ErrorResponse inside ResponseEntity
     */
 
+    ResponseEntity<Response> assignAdmin(String login);
+    /*
+        add admin role for user by login
+     */
+
+    ResponseEntity<Response> checkAdminRole(String jwt);
+    /*
+        extract login from jwt, then get user and check roles.
+        returning empty successResponse or status 403 in ErrorResponse
+     */
+
 }
