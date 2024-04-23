@@ -2,25 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style/auth.css">
+    <link rel="stylesheet" href="style/dbsMenu.css">
     <title>Data bases</title>
 </head>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 <script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
-<body>
-    <div id="dbs">
-        <h1 class="center">Сохранённые базы данных:</h1>
-        <div class="justify-center">
-            <div class="expand-menu color-first">
-                <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="color-second db-el">
-                    <h3>{{db.title}}</h3>
-                    <p>{{db.dbType}}</p>
+<body id="dbs">
+    <div class="container">
+        <div class="center-menu">
+            <h1 class="center">Сохранённые базы данных</h1>
+            <div class="justify-center">
+                <div class="db-menu-container">
+                    <div v-for="db in dbs.data" :key="db.id" @click="switchDb($event, db)" class="db-el">
+                        <h3>{{db.title}}</h3>
+                        <p>{{db.dbType}}</p>
+                    </div>
+                    <div class="db-el">
+                        <h3>Название</h3>
+                        <p>Тип</p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="justify-end">
-            <button type="button" class="color-first menu-btn" @click="goToAddDbPage">Добавить базу</button>
-            <button type="button" class="color-first menu-btn" @click="gotoHistory">История запросов</button>
+        <div class="right-menu">
+            <div class="btn-container">
+                <button type="button" v-if="adminRole" class="btn" @click="goToAddDbPage">Добавить базу</button>
+            </div>
+            <div class="btn-container">
+                <button type="button" v-if="adminRole" class="btn" @click="goToUsers">Пользователи</button>
+            </div>
+            <div class="btn-container">
+                <button type="button" class="btn" @click="gotoHistory">История запросов</button>
+            </div>
+            <div class="btn-container">
+                <button type="button" class="btn" @click="logOut">Выйти из учетной записи</button>
+            </div>
         </div>
     </div>
 </body>
@@ -29,7 +45,8 @@
     const app = Vue.createApp({
         data() {
             return {
-                dbs: []
+                dbs: [],
+                adminRole: false
             }
         },
         methods: {
@@ -55,19 +72,46 @@
                     });
             },
             goToAddDbPage() {
-                window.location.href = 'addDb.html'
+                window.location.href = 'addDb.html';
             },
             gotoHistory() {
-                window.location.href = 'recentActions.html'
-            }
+                window.location.href = 'recentActions.html';
+            },
+            goToUsers() {
+                window.location.href = 'users.html';
+            },
+            logOut() {
+                localStorage.removeItem('jwt');
+                window.location.href = 'index.html';
+            },
         },
         async created() {
-            const response = await axios.get('http://localhost:8080/api/v1/connectedDbs',
-                { headers: {
-                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
-                    }, 'x-content-type-options': 'nosniff' })
-            this.dbs = response.data
-            console.log(this.dbs)
+            if(localStorage.getItem('jwt') == null) {
+                window.location.href = 'index.html';
+            }
+
+            const jwt = localStorage.getItem('jwt');
+            if (jwt) {
+                try {
+                    const headers = {
+                        Authorization: `Bearer ${jwt}`
+                    };
+
+                    const dbResponse = await axios.get('http://localhost:8080/api/v1/connectedDbs', { headers });
+                    this.dbs = dbResponse.data;
+
+                    const roleResponse = await axios.post('http://localhost:8080/api/v1/users/checkAdminRole', { jwt: jwt }, { headers });
+                    this.adminRole = roleResponse.status === 200;
+                } catch (error) {
+                    if (error.response && error.response.status === 403) {
+                        this.adminRole = false;
+                    } else {
+                        console.error('Ошибка при получении данных:', error);
+                    }
+                }
+            } else {
+                console.error('JWT не найден');
+            }
         }
     });
     app.mount('#dbs');

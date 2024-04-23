@@ -16,6 +16,9 @@
 
         <div class="color-first center-menu">
             <div id="dataOutput">
+                <div v-if="errorText !== ''" class="error-msg">
+                    <span>{{errorText}}</span>
+                </div>
                 <table v-if="rows">
                     <tr>
                         <td v-for="field in rows[0].fields" :key="field.userTitle">
@@ -69,17 +72,25 @@
                             <label>Группировка</label>
                             <button type="button" class="inner-menu-btn" @click="showGroup">+</button>
                         </div>
-                        <div v-if="group" class="filter-container">
-                            <div class="filter-el">{{group}}</div>
-                            <div class="filter-el"><button class="close-btn" @click="removeGroup">&times;</button></div>
+                        <div v-if="savedGroups" v-for="group in savedGroups" class="filter-container">
+                            <div class="filter-el">{{group.field}}</div>
+                            <div class="filter-el">
+                                <button class="close-btn" @click="removeSavedGroup(group.field)">&times;</button>
+                            </div>
                         </div>
                         <div class="justify-between">
                             <label>Агрегация</label>
-                            <button type="button" class="inner-menu-btn" @click="">+</button>
+                            <button type="button" class="inner-menu-btn" @click="showAgregation">+</button>
+                        </div>
+                        <div v-if="savedAggregations" v-for="aggr in savedAggregations" class="filter-container">
+                            <div class="filter-el">{{aggr.operation}}</div>
+                            <div class="filter-el">
+                                <button class="close-btn" @click="removeSavedAggregation(aggr)">&times;</button>
+                            </div>
                         </div>
                         <div class="justify-between">
                             <label>Добавление таблицы</label>
-                            <button type="button" class="inner-menu-btn" @click="">+</button>
+                            <button type="button" class="inner-menu-btn" @click="showJoinMenu">+</button>
                         </div>
                         
                         <label>Лимит</label>
@@ -113,19 +124,19 @@
                             <option v-if="selectedTable" v-for="field in fields">{{field.userTitle}}</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="row-element">
                         <select v-model="sort.sortType" class="row-input">
                             <option disabled selected>Операция</option>
                             <option value="ASC">по возрастанию</option>
                             <option value="DESC">по убыванию</option>
                         </select>
                     </div>
-                    <div v-if="sorts.length > 1">
+                    <div class="btn-container" v-if="sorts.length > 1">
                         <button @click="removeSort(sort.field, sort.sortType)" class="rm-btn">-</button>
                     </div>
                 </div>
                 <div class="popup-bottom">
-                    <button class="send-btn" @click="addSort">Добавить</button>
+                    <button class="add-btn" @click="addSort">+</button>
                     <button class="send-btn" @click="acceptSort">Применить</button>
                 </div>
             </div>
@@ -159,7 +170,7 @@
                     <div class="row-element" v-if="filter.field.type === 'number' && filter.condition.isThereField === true">
                         <input v-model="filter.conditionField" max="1000000" type="number" class="row-input" placeholder="Число">
                     </div>
-                    <div v-if="filters.length > 1">
+                    <div class="btn-container" v-if="filters.length > 1">
                         <button @click="removeFilter(filter.field, filter.condition, filter.conditionField)" class="rm-btn">-</button>
                     </div>
                 </div>
@@ -175,29 +186,88 @@
                     <h2>Добавить группировку</h2>
                     <button @click="closeGroup" class="close-btn">&times;</button>
                 </div>
-                <div class="row">
+                <div class="row" v-for="group in groups">
                     <div class="row-element">
-                        <select id="fieldForGroup" class="row-input">
+                        <select class="row-input" v-model="group.field">
                             <option disabled selected>Поле</option>
                             <option v-if="selectedTable" v-for="field in fields">{{field.userTitle}}</option>
                         </select>
                     </div>
+                    <div class="btn-container" v-if="groups.length > 1">
+                        <button @click="removeGroup(group.field)" class="rm-btn">-</button>
+                    </div>
                 </div>
                 <div class="justify-end">
-                    <button class="add-btn">+</button>
-                    <button class="send-btn" @click="addGroup">Применить</button>
+                    <button class="send-btn">По всем полям</button>
+                    <button class="add-btn" @click="addGroup">+</button>
+                    <button class="send-btn" @click="acceptGroups">Применить</button>
                 </div>
             </div>
+
+
+            <div id="agregation" class="popUp">
+                <div class="justify-between">
+                    <h2>Добавить агрегацию</h2>
+                    <button @click="closeAgregation" class="close-btn">&times;</button>
+                </div>
+                <div class="row" v-for="agregation in agregations">
+                    <div class="row-element">
+                        <select class="row-input" v-model="agregation.field">
+                            <option disabled selected>Поле</option>
+                            <option v-if="selectedTable" v-for="field in fields" :value="field">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div v-if="agregation.field.type == 'number' || agregation.field.type == 'row' || agregation.field.type == 'time'"
+                    class="row-element">
+                        <select v-if="agregation.field.type == 'row'" class="row-input" v-model="agregation.operation">
+                            <option disabled selected>Операция</option>
+                            <option v-if="selectedTable" v-for="operation in operations.row">{{operation.title}}</option>
+                        </select>
+                        <select v-if="agregation.field.type == 'number'" class="row-input" v-model="agregation.operation">
+                            <option disabled selected>Операция</option>
+                            <option v-if="selectedTable" v-for="operation in operations.number">{{operation.title}}</option>
+                        </select>
+                        <select v-if="agregation.field.type == 'time'" class="row-input" v-model="agregation.operation">
+                            <option disabled selected>Операция</option>
+                            <option v-if="selectedTable" v-for="operation in operations.time">{{operation.title}}</option>
+                        </select>
+                    </div>
+                    <div class="btn-container" v-if="agregations.length > 1">
+                        <button @click="removeAgregation(agregation)" class="rm-btn">-</button>
+                    </div>
+                </div>
+                <div class="justify-end">
+                    <button class="add-btn" @click="addAggregation">+</button>
+                    <button class="send-btn" @click="acceptAggregations">Применить</button>
+                </div>
+            </div>
+
 
             <div id="join" class="popUp">
                 <div class="justify-between">
                     <h2>Присоединить таблицу</h2>
-                    <button @click="closeGroup" class="close-btn">&times;</button>
+                    <button @click="closeJoinMenu" class="close-btn">&times;</button>
                 </div>
-                <div class="row">
+                <div class="row" v-for="join in joins">
                     <div class="row-element">
-                        <select>
-
+                        <select v-model="join.field" class="row-input">
+                            <option disabled selected>Поле</option>
+                            <option v-for="field in fields">{{field.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div class="row-element">
+                        <span>&</span>
+                    </div>
+                    <div class="row-element">
+                        <select v-model="join.table" class="row-input">
+                            <option disabled selected>Таблица</option>
+                            <option v-for="table in tables" v-if="table != selectedTable">{{table.userTitle}}</option>
+                        </select>
+                    </div>
+                    <div class="row-element">
+                        <select class="row-input">
+                            <option disabled selected>Поле</option>
+                            <option v-for="join.table.fields"></option>
                         </select>
                     </div>
                 </div>

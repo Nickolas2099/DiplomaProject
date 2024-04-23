@@ -3,28 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
-    <title>Users</title>
+    <link rel="stylesheet" href="style/users.css"/>
+    <title>Пользователи</title>
 </head>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-<body>
-    <div id="app">
-        <table>
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Surname</th>
-                <th>Registration time</th>
-            </tr>
-            </thead>
-            <tbody>
-<!--                    v-if="users">-->
-            <tr v-for="user in users.data" :key="user.id">
-                <td>{{user.firstName}}</td>
-                <td>{{user.secondName}}</td>
-                <td>{{user.inputTime}}</td>
-            </tr>
-            </tbody>
-        </table>
+<script src="https://unpkg.com/axios@0.21.1/dist/axios.min.js"></script>
+<body id="app">
+    <div class="header-container">
+        <h2>Пользователи</h2>
+    </div>
+    <div class="main-container">
+        <div class="user-container">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Имя</td>
+                        <td>Фамилия</td>
+                        <td>Время регистрации</td>
+                        <td>Роли</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="user in users" :key="user.id">
+                        <td>{{user.firstName}}</td>
+                        <td>{{user.secondName}}</td>
+                        <td>{{user.inputTime}}</td>
+                        <td>
+                            <span class="roleTitle" v-for="role in user.roles">{{role.title}}</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Имя пример</td>
+                        <td>Фамилия пример</td>
+                        <td>Время пример</td>
+                        <td>
+                            <span class="roleTitle">Пользователь</span>
+                            <span class="roleTitle">Админ</span>
+                        </td>
+                        <td>
+                            <button @click="showRaiseMenu" class="raise-btn">&#8593;</button>
+                        </td>
+                        <td>
+                            <button @click="showDeleteMenu" class="remove-btn">&times;</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="deleteMenu" class="popUp">
+        <p class="caution-text">Вы действительно хотите ограничить доступ для этого пользователя?</p>
+        <div class="btn-container">
+            <button @click="closeDeleteMenu" class="btn-2">Отмена</button>
+            <button class="btn">Подтвердить</button>
+        </div>
+    </div>
+    <div id="raiseMenu" class="popUp">
+        <p class="caution-text">Вы действительно хотите назначить пользователя администратором?</p>
+        <div class="btn-container">
+            <button @click="closeRaiseMenu" class="btn-2">Отмена</button>
+            <button class="btn">Подтвердить</button>
+        </div>
     </div>
 </body>
 <script>
@@ -36,14 +75,31 @@
         },
         async created() {
             try {
-                const response = await fetch('http://localhost:8080/api/v1/users')
-                const data = await response.json()
-                this.users = data
 
-                console.log(this.users)
+                const response = await axios.get('http://localhost:8080/api/v1/users', 
+                { headers: {
+                        Authorization: `Bearer ${localStorage.getItem('jwt')}`
+                    }})
+                this.users = response.data.data;
+
             } catch (error) {
                 console.log(error)
             }
+        },
+        methods: {
+            showDeleteMenu() {
+                document.getElementById("deleteMenu").style.display="block";
+            },
+            showRaiseMenu() {
+                document.getElementById("raiseMenu").style.display="block";
+            },
+            closeDeleteMenu() {
+                document.getElementById("deleteMenu").style.display="none";
+            },
+            closeRaiseMenu() {
+                document.getElementById("raiseMenu").style.display="none";
+            },
+
         }
     })
 

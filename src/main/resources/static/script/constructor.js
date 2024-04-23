@@ -1,7 +1,7 @@
-function myFunction() {
-    var popup = document.getElementById("myPopup");
-    popup.classList.toggle("show");
-}
+// function myFunction() {
+//     var popup = document.getElementById("myPopup");
+//     popup.classList.toggle("show");
+// }
 
 const app = Vue.createApp({
     data() {
@@ -39,10 +39,49 @@ const app = Vue.createApp({
                 
                 number: [{title: '=', isThereField: true}, {title: '!=', isThereField: true}, {title: '>', isThereField: true},
                 {title: '<', isThereField: true}, {title: '<=', isThereField: true}, {title: '>=', isThereField: true}, {title: 'IS NOT NULL', isThereField: false}, 
-                {title: 'IS NULL', isThereField: false}]
+                {title: 'IS NULL', isThereField: false}],
+
+                time: [{title: 'До', isThereField: true}, {title: 'После', isThereField: true}
+
+                ]
             },
-            group: null,
-            limit: "10" 
+            groups: [{
+                field: 'Поле'
+            }],
+            savedGroups: null,
+            agregations: [{
+                operation : 'Операция',
+                field: {
+                    userTitle: 'Поле',
+                    techTitle: '',
+                    type: ''
+                }
+            }],
+            savedAggregations: null,
+            operations: {
+                row: [{title: 'count'}],
+                number: [{title: 'min'}, {title: 'max'}, {title: 'avg'}, {title: 'sum'}, {title: 'count'}],
+                time: [{title: 'count'}]
+            },
+            joins: [{
+                field: {
+                    userTitle: 'Поле',
+                    techTitle: '',
+                    type: ''
+                },
+                table: {
+                    userTitle: 'Таблица',
+                    techTitle: ''
+                },
+                tableField: {
+                    userTitle: 'Поле',
+                    techTitle: '',
+                    type: ''
+                }
+            }],
+            savedJoins: null,
+            limit: "10", 
+            errorText: ''
         };
     },
     methods: {
@@ -51,7 +90,7 @@ const app = Vue.createApp({
             this.checkedFields = [];
             this.savedSorts = null;
             this.savedFilters = null;
-            this.group = null;
+            this.savedGroups = null;
         },
         showFilter() {
             document.getElementById("filter").style.display="block";
@@ -111,12 +150,10 @@ const app = Vue.createApp({
         },
         closeSort() {
             document.getElementById("sortMenu").style.display="none";
-            this.sorts = [
-                    {
-                        field: 'Поле',
-                        sortType: 'Операция'
-                    }
-                ]
+            this.sorts = [{
+                    field: 'Поле',
+                    sortType: 'Операция'
+                }]
         },
         acceptSort() {
             this.savedSorts = this.sorts.filter(sort => sort.field !== 'Поле' && sort.sortType !== 'Операция');
@@ -127,8 +164,8 @@ const app = Vue.createApp({
                     this.sorts.push({
                         field: 'Поле',
                         sortType: 'Операция'
-                    });
-                }
+                });
+            }
         },
         removeSort(field, sortType) {
             let index = this.sorts.findIndex(s => s.field === field && s.sortType === sortType);
@@ -152,14 +189,88 @@ const app = Vue.createApp({
             document.getElementById("group").style.display="none";
         },
         addGroup() {
-            let field = document.getElementById('fieldForGroup').value;
-            if(field != 'Поле') {
-                this.group = field;
-                document.getElementById("group").style.display="none";
+            if(this.groups.length < 3) {
+                this.groups.push({
+                    field: 'Поле'
+                });
+                
             }
         },
-        removeGroup() {
-            this.group = null;
+        removeGroup(field) {
+            let index = this.groups.findIndex(g => g.field === field);
+            if (index !== -1) {
+                this.groups.splice(index, 1);
+            }
+        },
+        acceptGroups() {
+            const uniqueFields = new Set();
+            this.savedGroups = this.groups.filter(g => {
+              if (g.field !== 'Поле' && !uniqueFields.has(g.field)) {
+                uniqueFields.add(g.field);
+                return true;
+              }
+              return false;
+            });
+            
+            document.getElementById("group").style.display = "none";
+        },
+        acceptAllGroup() {
+            this.savedGroups = [{
+                field: '*'
+            }]
+            document.getElementById("group").style.display="none";
+        },
+        removeSavedGroup(field) {
+            let index = this.savedGroups.findIndex(g => g.field === field);
+            if (index !== -1) {
+                this.savedGroups.splice(index, 1);
+            }
+            if(this.savedGroups.length == 0) {
+                this.savedGroups = null;
+            }
+        },
+        showAgregation() {
+            document.getElementById("agregation").style.display = "block";
+        },
+        closeAgregation() {
+            document.getElementById("agregation").style.display = "none";
+        },
+        addAggregation() {
+            if(this.agregations.length < 3) {
+                this.agregations.push({
+                    operation : 'Операция',
+                    field: {
+                        userTitle: 'Поле',
+                        techTitle: '',
+                        type: ''
+                    }
+                });
+            }
+        },
+        removeAgregation(agregation) {
+            let index = this.agregations.findIndex(a => a === agregation);
+            if (index !== -1) {
+                this.agregations.splice(index, 1);
+            }
+        },
+        acceptAggregations() {
+            
+            let savedAggregations = [];
+            for (let i = 0; i < this.agregations.length; i++) {
+                let aggregation = this.agregations[i];
+                if(aggregation.field.techTitle == '' || aggregation.operation == '') {
+                    continue;
+                }
+                savedAggregations.push({ operation: aggregation.operation + '(' + aggregation.field.techTitle + ')'});
+            }
+            this.savedAggregations = savedAggregations;
+            document.getElementById("agregation").style.display = "none";
+        },
+        removeSavedAggregation(aggr) {
+            let index = this.savedAggregations.findIndex(a => a === aggr);
+            if (index !== -1) {
+                this.savedAggregations.splice(index, 1);
+            }
         },
         assembleFilters() {
             if(this.savedFilters != null) {
@@ -193,12 +304,21 @@ const app = Vue.createApp({
                         }
                     }
                     filters.push(filter);
-                    console.log(filter);
                     return filters;
                 }
             } else {
                 return null;
             }
+        },
+        showJoinMenu() {
+            document.getElementById("join").style.display="block";
+        },
+        closeJoinMenu() {
+            document.getElementById("join").style.display="none";
+        },
+        acceptJoins() {
+            this.savedJoin = this.joins.filter(j => j.field !== 'Поле' && j.table !== 'Таблица' && j.tableField !== 'Поле');
+            document.getElementById("join").style.display = "none";
         },
         sendQuery() {
 
@@ -210,10 +330,11 @@ const app = Vue.createApp({
                 fields: this.checkedFields.map(item => item.techTitle),
                 filters: filters,
                 sorts: this.savedSorts,
-                group: this.group,
+                groups: this.savedGroups,
+                aggregations: this.savedAggregations,
                 limit: this.limit,
             }
-            // console.log(query);
+            console.log(query);
             axios.post('http://localhost:8080/api/v1/connectedDbs/select', 
                 query,
                 {
@@ -223,8 +344,9 @@ const app = Vue.createApp({
                 }
             ).then(response => {
                 this.rows = response.data.data;
-                // console.log(response.data.data);
+                this.errorText = '';
             }).catch(error => {
+                this.errorText = 'Данных по результату запроса не найдено'
                 console.error(error);
             });
         },
@@ -240,18 +362,16 @@ const app = Vue.createApp({
                 headers: {
                     Authorization: `Bearer ${localStorage.getItem('jwt')}`
                 },
-                responseType: 'blob' // Указываем, что ожидаем получить данные в виде Blob
+                responseType: 'blob'
                 });
 
                 if (response.status === 200) {
                     const url = window.URL.createObjectURL(new Blob([response.data]));
-                    // Создаем ссылку и кликаем по ней для загрузки файла
                     const link = document.createElement('a');
                     link.href = url;
                     link.setAttribute('download', 'select.xlsx');
                     document.body.appendChild(link);
                     link.click();
-                    // Удаляем ссылку после загрузки
                     document.body.removeChild(link);
                 }
             } catch (error) {
@@ -271,14 +391,17 @@ const app = Vue.createApp({
         })
         this.tables = response.data.data;
         const typeMapping = {
+
             'tinyint': 'number',
             'smallint': 'number',
             'mediumint': 'number',
             'int': 'number',
+            'integer': 'number',
             'bigint': 'number',
             'float': 'number',
             'double': 'number',
             'char': 'row',
+            'character varying': 'row',
             'varchar': 'row',
             'text': 'row',
             'date': 'time',
@@ -286,7 +409,6 @@ const app = Vue.createApp({
             'timestamp': 'time',
             'time': 'time',
             'year': 'time'
-
         };
 
         this.tables.forEach(table => {
@@ -297,7 +419,6 @@ const app = Vue.createApp({
             });
         });
         this.selectedTable = this.tables[0] || null;
-        // console.log(this.tables);
     }
 });
 app.mount('#contructor');

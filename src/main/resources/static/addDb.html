@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="style/dbAddStyle.css">
+    <link rel="stylesheet" href="style/addDb.css">
     <title>Добавление базы данных</title>
 </head>
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
@@ -109,8 +109,9 @@
         this.db.url = url;
       },
       testConnection() {
-        // const dbString = encodeURIComponent(JSON.stringify(this.db))
-        const response = axios.get("http://localhost:8080/api/v1/connectedDbs/testConnection", this.db, {
+        let dbCopy = Object.assign({}, this.db);
+        dbCopy.dbType = dbCopy.dbType.toUpperCase();
+        const response = axios.post("http://localhost:8080/api/v1/connectedDbs/testConnection", dbCopy, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('jwt')}`
           }
